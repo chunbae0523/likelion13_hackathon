@@ -1,9 +1,52 @@
 import { StatusBar } from "expo-status-bar";
-import { Text, View, Image, ActivityIndicator, Pressable } from "react-native";
 import { useFonts } from "expo-font";
 import styles from "./styles.js";
+import React, { use, useRef, useState } from "react";
+import {
+  Text,
+  View,
+  Image,
+  ActivityIndicator,
+  Pressable,
+  Animated,
+  PanResponder
+} from "react-native";
 
 export default function App() {
+  // 지역명 옆 화살표 애니메이션
+  const rotateArrow = useRef(new Animated.Value(0)).current; // 회전값 상태 선언
+  const [toggled, setToggled] = useState(false); // 화살표 토글 상태 선언
+  const rotateArrowDown = () => {
+    // 클릭 시 회전 애니메이션 실행
+    Animated.timing(rotateArrow, {
+      toValue: toggled ? 0 : 1, // 아래로 100px 이동
+      duration: 500, // 0.5초동안 애니메이션
+      useNativeDriver: true, // 성능 향상 옵션
+    }).start();
+    setToggled(!toggled);
+  };
+  const rotation = rotateArrow.interpolate({
+    // rotateArrow값을 0deg~180deg로 변환
+    inputRange: [0, 1],
+    outputRange: ["360deg", "180deg"],
+  });
+
+  // 홈 광고이미지 좌우 이동 애니메이션
+  const pan = useRef(new Animated.ValueXY()).current; // 위치를 저장하는 Animated.ValueXY
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true, // 터치 시작 시 panResponder 활성화
+      onPanResponderMove: Animated.event(
+        [null, {dx: pan.x}],
+        { useNativeDriver: false } // 위치값 XY는 nativeDriver 지원 안 함.
+      ),
+      onPanResponderRelease: () => {
+        // 터치 해제 시 애니메이션 초기화
+        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
+
   // 폰트 로딩
   const [fontsLoaded] = useFonts({
     "Pretendard-Regular": require("./assets/fonts/Pretendard-Regular.ttf"),
@@ -44,13 +87,18 @@ export default function App() {
         </View>
 
         <View style={styles.topBoxDownSide}>
-          <View style={styles.topBoxDownLeftSide}>
-            <Text style={styles.locationText}>동작구</Text>
-            <Image
-              source={require("./assets/down_arrow.png")}
-              style={styles.topBoxDownArrow}
-            />
-          </View>
+          <Pressable onPress={rotateArrowDown}>
+            <View style={styles.topBoxDownLeftSide}>
+              <Text style={styles.locationText}>동작구</Text>
+              <Animated.Image
+                source={require("./assets/down_arrow.png")}
+                style={[
+                  styles.topBoxDownArrow,
+                  { transform: [{ rotate: rotation }] },
+                ]}
+              />
+            </View>
+          </Pressable>
 
           <View style={styles.topBoxDownRightSide}>
             <Image
@@ -64,60 +112,70 @@ export default function App() {
       </View>
 
       <View style={styles.middleAdBox}>
-        <Image
-          style={styles.middleAdImg}
-          source={require("./assets/ad.jpg")}
-        />
+        <Animated.Image {...panResponder.panHandlers} 
+          style={[pan.getLayout(), styles.middleAdImg]}
+          source={require("./assets/ad.jpg")} />
+          {/* <Image style={styles.middleAdImg} source={require("./assets/ad.jpg")} /> */}
       </View>
 
       <View style={styles.middleBottomContainer}>
         <View style={styles.middleBox}>
           <View style={styles.middleTop}>
             <Text style={styles.middleTopText}>오늘의 소문</Text>
-            <Text style={styles.middleTopShowAll}>전체보기 {'>'}</Text>
+            <Text style={styles.middleTopShowAll}>전체보기 {">"}</Text>
           </View>
           <View style={styles.middleBottomCase}>
             <View style={styles.middleBottom}>
               <View style={styles.bottomAd}>
-                <Image 
-                source={require("./assets/ad.jpg")}
-                style={styles.bottomAdImage} />
+                <Image
+                  source={require("./assets/ad.jpg")}
+                  style={styles.bottomAdImage}
+                />
                 <View style={styles.eventBox}>
                   <Text style={styles.bottomTodays}>오늘의 축제</Text>
-                  <Text style={styles.bottomTodaysDescription}>가족과 함께하는{'\n'}2025 제6회 송도해변축제</Text>
+                  <Text style={styles.bottomTodaysDescription}>
+                    가족과 함께하는{"\n"}2025 제6회 송도해변축제
+                  </Text>
                 </View>
-                <Image 
-                source={require("./assets/left_arrow.png")}
-                style={styles.bottomArrowImage} />
+                <Image
+                  source={require("./assets/left_arrow.png")}
+                  style={styles.bottomArrowImage}
+                />
               </View>
               <View style={styles.bottomAd}>
-                <Image 
-                source={require("./assets/ad.jpg")}
-                style={styles.bottomAdImage} />
+                <Image
+                  source={require("./assets/ad.jpg")}
+                  style={styles.bottomAdImage}
+                />
                 <View style={styles.eventBox}>
                   <Text style={styles.bottomTodays}>오늘의 행사</Text>
-                  <Text style={styles.bottomTodaysDescription}>2025 all Nights Incheon{'\n'}월간 개항장 야간마켓</Text>
+                  <Text style={styles.bottomTodaysDescription}>
+                    2025 all Nights Incheon{"\n"}월간 개항장 야간마켓
+                  </Text>
                 </View>
-                <Image 
-                source={require("./assets/left_arrow.png")}
-                style={styles.bottomArrowImage} />
+                <Image
+                  source={require("./assets/left_arrow.png")}
+                  style={styles.bottomArrowImage}
+                />
               </View>
               <View style={styles.bottomAd}>
-                <Image 
-                source={require("./assets/ad.jpg")}
-                style={styles.bottomAdImage} />
+                <Image
+                  source={require("./assets/ad.jpg")}
+                  style={styles.bottomAdImage}
+                />
                 <View style={styles.eventBox}>
                   <Text style={styles.bottomTodays}>오늘의 대회</Text>
-                  <Text style={styles.bottomTodaysDescription}>이런저런설명이있는축제</Text>
+                  <Text style={styles.bottomTodaysDescription}>
+                    이런저런설명이있는축제
+                  </Text>
                 </View>
-                <Image 
-                source={require("./assets/left_arrow.png")}
-                style={styles.bottomArrowImage} />
+                <Image
+                  source={require("./assets/left_arrow.png")}
+                  style={styles.bottomArrowImage}
+                />
               </View>
             </View>
           </View>
-
-
         </View>
 
         <View style={styles.bottomBox}>
