@@ -18,6 +18,7 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     width: screenWidth,
     height: screenHeight,
+    paddingBottom: 100,
   },
 
   topBox: {
@@ -109,7 +110,6 @@ export default StyleSheet.create({
   middleAdImg: {
     width: '95%',
     height: '95%',
-    resizeMode: 'contain',
   },
 
   middleBox: {
@@ -136,7 +136,7 @@ export default StyleSheet.create({
   middleBottomCase: {
     alignItems: 'center',
     paddingTop: 15*scale,
-    paddingBottom: 19*scale,
+    paddingBottom: 10*scale,
   },
 
   middleBottom: {
@@ -191,72 +191,6 @@ export default StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 14*scale,
     color: '#292929',
-  },
-
-  bottomBox: {
-    width: screenWidth,
-    height: 100,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    // iOS 그림자
-    shadowColor: '#9A9A9A',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-
-    // Android 그림자
-    elevation: 10,
-    justifyContent: 'flex-end',
-  },
-
-  bottomBoxButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 25*scale,
-  },
-
-  bottomButton: {
-    flexDirection: 'column',
-    width: 55*scale,
-    height: 69.33*scale,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    marginBottom: 20.67*scale,
-    paddingBottom:8.33*scale,
-  },
-
-  bottomText: {
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 12*scale,
-    color: '#C2C2C2',
-    textAlign: 'center',
-  },
-
-  bottomHomeIcon: {
-    width: 21.25*scale,
-    height: 23.24*scale,
-    marginBottom: 11.26*scale,
-  },
-
-  bottomCommunityIcon: {
-    width: 33.3*scale,
-    height: 24.99*scale,
-    marginBottom: 11.97*scale,
-    marginLeft: 3*scale,
-  },
-
-  bottomMapIcon: {
-    width: 22.67*scale,
-    height: 28.33*scale,
-    marginBottom: 7.67*scale,
-  },
-
-  bottomMyPageIcon: {
-    width: 25.5*scale,
-    height: 25.5*scale,
-    marginBottom: 9.75*scale,
   },
 
 });

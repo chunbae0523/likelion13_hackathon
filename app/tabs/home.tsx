@@ -1,18 +1,16 @@
-import { StatusBar } from "expo-status-bar";
-import { useFonts } from "expo-font";
-import styles from "./styles.js";
-import React, { use, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
-  Text,
-  View,
-  Image,
-  ActivityIndicator,
-  Pressable,
   Animated,
-  PanResponder
+  Image,
+  PanResponder,
+  Pressable,
+  Text,
+  View
 } from "react-native";
+import styles from "../styles/home_style.js";
 
-export default function App() {
+export default function HomePage() {
+
   // 지역명 옆 화살표 애니메이션
   const rotateArrow = useRef(new Animated.Value(0)).current; // 회전값 상태 선언
   const [toggled, setToggled] = useState(false); // 화살표 토글 상태 선언
@@ -47,40 +45,21 @@ export default function App() {
     })
   ).current;
 
-  // 폰트 로딩
-  const [fontsLoaded] = useFonts({
-    "Pretendard-Regular": require("./assets/fonts/Pretendard-Regular.ttf"),
-    "Pretendard-Bold": require("./assets/fonts/Pretendard-Bold.ttf"),
-    "Pretendard-ExtraBold": require("./assets/fonts/Pretendard-ExtraBold.ttf"),
-    "Pretendard-Medium": require("./assets/fonts/Pretendard-Medium.ttf"),
-    "Pretendard-Light": require("./assets/fonts/Pretendard-Light.ttf"),
-    "Pretendard-SemiBold": require("./assets/fonts/Pretendard-SemiBold.ttf"),
-  });
-
-  // 폰트 로딩 중에는 로딩 화면 표시
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.topBox}>
         <View style={styles.topBoxUpSide}>
           <Image
-            source={require("./assets/title.png")}
+            source={require("../../assets/images/title.png")}
             style={styles.topBoxTitle}
           />
           <View style={styles.topBoxUpRightside}>
             <Image
-              source={require("./assets/search.png")}
+              source={require("../../assets/images/search.png")}
               style={styles.topBoxSearch}
             />
             <Image
-              source={require("./assets/notice.png")}
+              source={require("../../assets/images/notice.png")}
               style={styles.topBoxNotification}
             />
           </View>
@@ -91,7 +70,7 @@ export default function App() {
             <View style={styles.topBoxDownLeftSide}>
               <Text style={styles.locationText}>동작구</Text>
               <Animated.Image
-                source={require("./assets/down_arrow.png")}
+                source={require("../../assets/images/down_arrow.png")}
                 style={[
                   styles.topBoxDownArrow,
                   { transform: [{ rotate: rotation }] },
@@ -102,7 +81,7 @@ export default function App() {
 
           <View style={styles.topBoxDownRightSide}>
             <Image
-              source={require("./assets/my_location.png")}
+              source={require("../../assets/images/my_location.png")}
               style={styles.topBoxMyLocationImg}
             />
             <Text style={styles.topBoxMyLocationText}>내위치</Text>
@@ -114,11 +93,12 @@ export default function App() {
       <View style={styles.middleAdBox}>
         <Animated.Image {...panResponder.panHandlers} 
           style={[pan.getLayout(), styles.middleAdImg]}
-          source={require("./assets/ad.jpg")} />
-          {/* <Image style={styles.middleAdImg} source={require("./assets/ad.jpg")} /> */}
+          source={require("../../assets/images/ad.jpg")}
+          resizeMode="contain"
+        />
       </View>
 
-      <View style={styles.middleBottomContainer}>
+      <View style={styles.middleBottomCase}>
         <View style={styles.middleBox}>
           <View style={styles.middleTop}>
             <Text style={styles.middleTopText}>오늘의 소문</Text>
@@ -128,7 +108,7 @@ export default function App() {
             <View style={styles.middleBottom}>
               <View style={styles.bottomAd}>
                 <Image
-                  source={require("./assets/ad.jpg")}
+                  source={require("../../assets/images/ad.jpg")}
                   style={styles.bottomAdImage}
                 />
                 <View style={styles.eventBox}>
@@ -138,13 +118,13 @@ export default function App() {
                   </Text>
                 </View>
                 <Image
-                  source={require("./assets/left_arrow.png")}
+                  source={require("../../assets/images/left_arrow.png")}
                   style={styles.bottomArrowImage}
                 />
               </View>
               <View style={styles.bottomAd}>
                 <Image
-                  source={require("./assets/ad.jpg")}
+                  source={require("../../assets/images/ad.jpg")}
                   style={styles.bottomAdImage}
                 />
                 <View style={styles.eventBox}>
@@ -154,13 +134,13 @@ export default function App() {
                   </Text>
                 </View>
                 <Image
-                  source={require("./assets/left_arrow.png")}
+                  source={require("../../assets/images/left_arrow.png")}
                   style={styles.bottomArrowImage}
                 />
               </View>
               <View style={styles.bottomAd}>
                 <Image
-                  source={require("./assets/ad.jpg")}
+                  source={require("../../assets/images/ad.jpg")}
                   style={styles.bottomAdImage}
                 />
                 <View style={styles.eventBox}>
@@ -170,7 +150,7 @@ export default function App() {
                   </Text>
                 </View>
                 <Image
-                  source={require("./assets/left_arrow.png")}
+                  source={require("../../assets/images/left_arrow.png")}
                   style={styles.bottomArrowImage}
                 />
               </View>
@@ -178,49 +158,7 @@ export default function App() {
           </View>
         </View>
 
-        <View style={styles.bottomBox}>
-          <View style={styles.bottomBoxButtons}>
-            <Pressable onPress={() => console.log("Home Pressed")}>
-              <View style={styles.bottomButton}>
-                <Image
-                  source={require("./assets/home_off.png")}
-                  style={styles.bottomHomeIcon}
-                />
-                <Text style={styles.bottomText}>홈</Text>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => console.log("Community Pressed")}>
-              <View style={styles.bottomButton}>
-                <Image
-                  source={require("./assets/community_off.png")}
-                  style={styles.bottomCommunityIcon}
-                />
-                <Text style={styles.bottomText}>커뮤니티</Text>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => console.log("Map Pressed")}>
-              <View style={styles.bottomButton}>
-                <Image
-                  source={require("./assets/location_off.png")}
-                  style={styles.bottomMapIcon}
-                />
-                <Text style={styles.bottomText}>지도</Text>
-              </View>
-            </Pressable>
-            <Pressable onPress={() => console.log("My Page Pressed")}>
-              <View style={styles.bottomButton}>
-                <Image
-                  source={require("./assets/my_off.png")}
-                  style={styles.bottomMyPageIcon}
-                />
-                <Text style={styles.bottomText}>마이페이지</Text>
-              </View>
-            </Pressable>
-          </View>
-        </View>
       </View>
-
-      <StatusBar style="auto" />
     </View>
   );
 }
