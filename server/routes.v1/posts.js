@@ -1,6 +1,6 @@
 // routes.v1/posts.js
-import { Router } from "express";
 import crypto from "crypto";
+import { Router } from "express";
 
 const router = Router();
 

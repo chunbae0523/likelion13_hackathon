@@ -1,7 +1,10 @@
 
 // server/routes.v1/map.js
-import { Router } from "express";
 import axios from "axios";
+import { Router } from "express";
+// server/routes.v1/map.js
+import { buildPlaceList } from "../services/places.service.js"; // ⬅️ 추가
+
 
 const router = Router();
 
@@ -24,6 +27,42 @@ function distKm(lat1,lng1,lat2,lng2){
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
+
+// 0) 새로 추가할 /places 핸들러
+router.get("/places", async (req, res) => {
+  const {
+    category = "recommend",
+    lat,
+    lng,
+    region,
+    page = 1,
+    limit = 3,
+    seed,
+  } = req.query;
+
+  if ((!lat || !lng) && !region) {
+    return res
+      .status(400)
+      .json({ error: "lat,lng 또는 region 중 하나는 필요합니다." });
+  }
+
+  try {
+    const data = await buildPlaceList({
+      category,
+      lat: lat ? Number(lat) : undefined,
+      lng: lng ? Number(lng) : undefined,
+      region: region || undefined,
+      page: Number(page),
+      limit: Number(limit),
+      seed: seed != null ? Number(seed) : undefined,
+    });
+    res.json(data);
+  } catch (e) {
+    console.error("[/map/places] failed:", e?.response?.data || e.message);
+    res.status(500).json({ error: "PLACES_FAILED" });
+  }
+});
+
 
 /** 1) 지도 주변 가게 목록 */
 router.get("/stores", (req, res) => {

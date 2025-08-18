@@ -1,9 +1,9 @@
 // server/index.js
-import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
 
-import v1 from "./routes.v1/index.js";  // 만든 라우터 모음(index.js) 불러오기
+import v1 from "./routes.v1/index.js"; // 만든 라우터 모음(index.js) 불러오기
 
 dotenv.config();
 
