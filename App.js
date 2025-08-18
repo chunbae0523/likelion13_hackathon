@@ -1,4 +1,4 @@
-// App.tsx
+// 이건 지우셔도 됩니다...
 import React from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import MapScreen from "./src/screens/MapScreen";
