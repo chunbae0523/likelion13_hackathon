@@ -1,6 +1,12 @@
+# dependencies
 node_modules/
-uploads/
-*.mp4
+
+# build output
+dist/
+build/
+
+# env
 .env
-.idea/
-desktop.ini
+
+# OS / etc
+.DS_Store
