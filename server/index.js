@@ -3,19 +3,21 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
-import v1 from "./routes.v1/index.js"; // 만든 라우터 모음(index.js) 불러오기
+import v1Router from "./routes.v1/index.js"; // ★ 이 줄 중요 (경로/확장자 포함)
+
 
 dotenv.config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+app.use("/api/v1", v1Router);
 
 // 헬스체크
 app.get("/ping", (_req, res) => res.json({ ok: true }));
 
-// /api/v1 아래로 모든 라우터 연결
-app.use("/api/v1", v1);
 
 // 공통 에러 처리 (에러 나면 500으로 응답)
 app.use((err, _req, res, _next) => {
