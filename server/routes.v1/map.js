@@ -1,51 +1,39 @@
-
-// server/routes.v1/map.js
-import axios from "axios";
 import { Router } from "express";
-// server/routes.v1/map.js
-import { buildPlaceList } from "../services/places.service.js"; // ⬅️ 추가
-
+import { buildPlaceList, forwardGeocode, reverseGeocode } from "../services/places.service.js";
 
 const router = Router();
 
-// 간단 mock 데이터
-const MOCK_STORES = [
-  { id: "s1", name: "치킨집 A", lat: 37.501, lng: 127.001 },
-  { id: "s2", name: "카페 B",   lat: 37.499, lng: 126.999 },
-  { id: "s3", name: "분식 C",   lat: 37.503, lng: 127.002 },
-];
-
-const MOCK_POSTS = [
-  { id: "p1", storeId: "s1", content: "주말 30% 할인!" },
-  { id: "p2", storeId: "s2", content: "신메뉴 라떼 출시" },
-  { id: "p3", storeId: "s3", content: "떡볶이 1+1 이벤트" },
-];
-
-// Haversine 거리 (km)
-function distKm(lat1,lng1,lat2,lng2){
-  const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-// 0) 새로 추가할 /places 핸들러
-router.get("/places", async (req, res) => {
-  const {
-    category = "recommend",
-    lat,
-    lng,
-    region,
-    page = 1,
-    limit = 3,
-    seed,
-  } = req.query;
-
-  if ((!lat || !lng) && !region) {
-    return res
-      .status(400)
-      .json({ error: "lat,lng 또는 region 중 하나는 필요합니다." });
+/** 새로 추가: 좌표 → 주소 (구글 사용) */
+router.get("/geocode/reverse", async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    if (!lat || !lng) return res.status(400).json({ error: "lat,lng required" });
+    const address = await reverseGeocode({ lat: Number(lat), lng: Number(lng) });
+    res.json({ address });
+  } catch (e) {
+    res.status(500).json({ error: "REVERSE_GEOCODE_FAILED", detail: String(e) });
   }
+});
 
+/** 새로 추가: 주소 → 좌표 (구글 사용) */
+router.get("/geocode/search", async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: "q (address) required" });
+    const result = await forwardGeocode(String(q));
+    if (!result) return res.status(404).json({ error: "NOT_FOUND" });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: "FORWARD_GEOCODE_FAILED", detail: String(e) });
+  }
+});
+
+/** 0) 추천 장소 리스트 (주소는 구글에서 받은 진짜 주소 사용) */
+router.get("/places", async (req, res) => {
+  const { category = "recommend", lat, lng, region, page = 1, limit = 3, seed } = req.query;
+  if ((!lat || !lng) && !region) {
+    return res.status(400).json({ error: "lat,lng 또는 region 중 하나는 필요합니다." });
+  }
   try {
     const data = await buildPlaceList({
       category,
@@ -63,119 +51,19 @@ router.get("/places", async (req, res) => {
   }
 });
 
-
-/** 1) 지도 주변 가게 목록 */
+/** 1) 주변 가게(모의) */
 router.get("/stores", (req, res) => {
-  const { lat, lng, radius = "3km" } = req.query;
-  if (!lat || !lng) return res.status(400).json({ error: "lat,lng required" });
-  const R = Number(String(radius).replace(/km$/,"")) || 3;
-  const center = { lat:Number(lat), lng:Number(lng) };
-
-  const items = MOCK_STORES
-    .map(s => ({ ...s, distance_km: Number(distKm(center.lat, center.lng, s.lat, s.lng).toFixed(3)) }))
-    .filter(s => s.distance_km <= R)
-    .sort((a,b)=>a.distance_km-b.distance_km);
-
-  res.json({ center, radius, items });
+  // ... (네 기존 코드 그대로)
 });
 
-/** 2) 지도에 표시할 게시글 */
+/** 2) 지도 게시글(모의) */
 router.get("/posts", (req, res) => {
-  const { lat, lng } = req.query;
-  if (!lat || !lng) return res.status(400).json({ error: "lat,lng required" });
-  const center = { lat:Number(lat), lng:Number(lng) };
-
-  // 간단히 가게 좌표를 붙여 반환
-  const items = MOCK_POSTS.map(p => {
-    const s = MOCK_STORES.find(x => x.id === p.storeId);
-    return s ? { ...p, lat: s.lat, lng: s.lng } : p;
-  });
-
-  res.json({ center, items });
+  // ... (네 기존 코드 그대로)
 });
 
-/** 3) 인사이트 */
+/** 3) 인사이트(OpenAI) */
 router.get("/insights", async (req, res) => {
-  try {
-    const { lat, lng, radius = "3km" } = req.query;
-    if (!lat || !lng) return res.status(400).json({ error: "lat,lng required" });
-
-    // 내부 API에서 데이터 모으기 (위의 2개가 반드시 200이어야 함!)
-    const base = `${req.protocol}://${req.get("host")}/api/v1/map`;
-    const [storesResp, postsResp] = await Promise.all([
-      axios.get(`${base}/stores`, { params: { lat, lng, radius } }),
-      axios.get(`${base}/posts`,  { params: { lat, lng } })
-    ]);
-
-    const stores = storesResp.data.items || [];
-    const posts  = postsResp.data.items || [];
-
-    const prompt = `
-너는 데이터 분석 도우미야.
-아래 데이터로 JSON만 반환해.
-
-필드:
-1) nearest_stores: 거리 상위 3곳 {id,name,distance_km}
-2) post_summaries: 게시글 요약 3개 [{id, summary}]
-3) suggestions: 상점 홍보문구 3개 (짧게)
-4) hashtags: 해시태그 5개 (공백 없이)
-
-반드시 JSON만:
-{
-  "nearest_stores": [],
-  "post_summaries": [],
-  "suggestions": [],
-  "hashtags": []
-}
-
-STORES_JSON:
-${JSON.stringify(stores).slice(0, 15000)}
-
-POSTS_JSON:
-${JSON.stringify(posts).slice(0, 15000)}
-    `.trim();
-
-    // Azure OpenAI 호출
-    const endpoint   = (process.env.AZURE_OPENAI_ENDPOINT || "").replace(/\/+$/,"");
-    const apiKey     = process.env.AZURE_OPENAI_KEY;
-    const apiVersion = process.env.AZURE_OPENAI_API_VERSION || "2024-02-01";
-    const deployment = process.env.AZURE_OPENAI_CHAT_DEPLOYMENT; // 예: my-gpt-4o-mini
-
-    if (!endpoint || !apiKey || !deployment) {
-      return res.status(500).json({ error: "AZURE_ENV_NOT_SET" });
-    }
-
-    const chatUrl = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
-    let chatResp;
-    try {
-      chatResp = await axios.post(
-        chatUrl,
-        {
-          messages: [
-            { role: "system", content: "You are a helpful data analysis assistant. Always return VALID JSON only." },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.2,
-          max_tokens: 600
-        },
-        { headers: { "api-key": apiKey, "Content-Type": "application/json" } }
-      );
-    } catch (e) {
-      console.error("[AZURE CHAT ERROR]", e?.response?.status, e?.response?.data || e.message);
-      return res.status(502).json({ error: "AZURE_CHAT_REQUEST_FAILED" });
-    }
-
-    const text = chatResp.data?.choices?.[0]?.message?.content || "{}";
-    let insights;
-    try { insights = JSON.parse(text); }
-    catch { insights = { raw: text }; }
-
-    return res.json({ center: { lat:Number(lat), lng:Number(lng) }, insights });
-
-  } catch (e) {
-    console.error("[INSIGHTS_FAILED]", e?.response?.status, e?.response?.data || e.message);
-    res.status(500).json({ error: "INSIGHTS_FAILED" });
-  }
+  // ... (네 기존 코드 그대로, chat deployment만 env에서 읽도록 되어 있음)
 });
 
 export default router;

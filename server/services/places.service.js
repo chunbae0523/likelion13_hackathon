@@ -17,11 +17,37 @@ function prng(seed) {
   return x - Math.floor(x);
 }
 
-// ── 역지오코딩: 좌표 → 주소 문자열 ──────────────────────────
-async function reverseGeocode({ lat, lng }) {
+/** ─────────────────────────────────────────────
+ *  좌표→주소 (역지오코딩)
+ *  MAP_PROVIDER=google 이고 GOOGLE_MAPS_API_KEY 가 있으면
+ *  구글로 실제 주소를 받아온다.
+ *  실패하면 " (lat,lng) 근처 " 같은 안전 문구를 반환.
+ *  ──────────────────────────────────────────── */
+export async function reverseGeocode({ lat, lng }) {
   const provider = (process.env.MAP_PROVIDER || "kakao").toLowerCase();
 
-  // 1) 카카오
+  // 0) Google (권장)
+  if (provider === "google" && process.env.GOOGLE_MAPS_API_KEY) {
+    const url = "https://maps.googleapis.com/maps/api/geocode/json";
+    const res = await axios.get(url, {
+      params: { latlng: `${lat},${lng}`, key: process.env.GOOGLE_MAPS_API_KEY, language: "ko" },
+      timeout: 4000,
+    });
+    const r0 = res.data?.results?.[0];
+    const addr = r0?.formatted_address;
+    if (addr) return addr;
+
+    // 주소가 비어 있으면 행정구역 조합 시도
+    const c = r0?.address_components || [];
+    const pick = (t) => c.find(x => x.types?.includes(t))?.long_name || "";
+    const a1 = pick("administrative_area_level_1");
+    const a2 = pick("administrative_area_level_2");
+    const a3 = pick("sublocality") || pick("locality");
+    const fallback = `${a1} ${a2} ${a3}`.trim();
+    if (fallback) return fallback;
+  }
+
+  // 1) Kakao (옵션)
   if (provider === "kakao" && process.env.KAKAO_REST_KEY) {
     const url = "https://dapi.kakao.com/v2/local/geo/coord2address.json";
     const res = await axios.get(url, {
@@ -34,20 +60,15 @@ async function reverseGeocode({ lat, lng }) {
     if (addr) return addr;
   }
 
-  // 2) 네이버
+  // 2) Naver (옵션)
   if (
     provider === "naver" &&
     process.env.NAVER_CLIENT_ID &&
     process.env.NAVER_CLIENT_SECRET
   ) {
-    const url =
-      "https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc";
+    const url = "https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc";
     const res = await axios.get(url, {
-      params: {
-        coords: `${lng},${lat}`,
-        orders: "roadaddr,addr,admcode",
-        output: "json",
-      },
+      params: { coords: `${lng},${lat}`, orders: "roadaddr,addr,admcode", output: "json" },
       headers: {
         "X-NCP-APIGW-API-KEY-ID": process.env.NAVER_CLIENT_ID,
         "X-NCP-APIGW-API-KEY": process.env.NAVER_CLIENT_SECRET,
@@ -64,30 +85,56 @@ async function reverseGeocode({ lat, lng }) {
     }
   }
 
-  // 3) 키가 없거나 실패한 경우: 좌표 근처 표시
+  // 3) 모두 실패하면 안전한 문구
   return lat && lng ? `(${lat.toFixed(4)}, ${lng.toFixed(4)}) 근처` : "우리동네";
 }
 
-// ── 메인 생성 로직 ────────────────────────────────────────
+/** 주소→좌표 (정방향 geocoding: 검색용) */
+export async function forwardGeocode(query) {
+  // 지금은 구글만 지원
+  if (process.env.GOOGLE_MAPS_API_KEY) {
+    const url = "https://maps.googleapis.com/maps/api/geocode/json";
+    const res = await axios.get(url, {
+      params: { address: query, key: process.env.GOOGLE_MAPS_API_KEY, language: "ko", region: "kr" },
+      timeout: 4000,
+    });
+    const r0 = res.data?.results?.[0];
+    if (!r0) return null;
+    return {
+      formattedAddress: r0.formatted_address,
+      lat: r0.geometry?.location?.lat,
+      lng: r0.geometry?.location?.lng,
+      placeId: r0.place_id,
+    };
+  }
+  return null;
+}
+
+/** 목록 생성 (프론트 카드/리스트용) */
 export async function buildPlaceList({
   category,
   lat,
   lng,
-  region,      // 사용자가 검색에서 고른 지역명 문자열(옵션)
+  region, // 사용자가 고른 지역명(옵션)
   page,
   limit,
   seed,
 }) {
-  const label = LABELS[category] || LABELS.recommend;
+  const LABEL = {
+    recommend: "추천",
+    popular:   "인기",
+    event:     "동네행사",
+    food:      "맛집",
+    cafe:      "카페",
+    mart:      "마트",
+  };
+  const label = LABEL[category] || LABEL.recommend;
 
-  // 주소의 "기준 문구"를 결정: region 우선 → 없으면 역지오코딩 → 그래도 없으면 기본
+  // 주소 문구 만들기: region 우선 → 없으면 역지오코딩 → 기본
   let baseAddress = region;
   if (!baseAddress && lat != null && lng != null) {
-    try {
-      baseAddress = await reverseGeocode({ lat, lng });
-    } catch {
-      baseAddress = lat && lng ? `(${lat.toFixed(4)}, ${lng.toFixed(4)}) 근처` : "우리동네";
-    }
+    try { baseAddress = await reverseGeocode({ lat, lng }); }
+    catch { baseAddress = `(${lat.toFixed(4)}, ${lng.toFixed(4)}) 근처`; }
   }
   if (!baseAddress) baseAddress = "우리동네";
 
@@ -96,27 +143,22 @@ export async function buildPlaceList({
 
   for (let i = 0; i < limit; i++) {
     const id = base + i + 1;
-    const s = (seed ?? 777) + i; // seed 없으면 777 기준
-    const jitter = () => (prng(s) - 0.5) * 0.02; // 근처 좌표 산출
+    const s = (seed ?? 777) + i;
+    const jitter = () => (prng(s) - 0.5) * 0.02; // 중심 근처로 살짝 흩뿌리기
     const dist = Math.round(((i + 1) * 0.6 + prng(s)) * 10) / 10;
 
     items.push({
       id: `${category}-${id}`,
       name: `${label} 스팟 ${id}`,
       distanceKm: dist,
-      address: `${baseAddress} ${id}`,      // ← 주소 문구가 여기서 결정됨
-      lat: (lat ?? 37.5665) + jitter(),     // lat/lng 없으면 서울 시청 근방
+      address: `${baseAddress} ${id}`,     // 이제 여기 주소가 구글에서 온 '진짜 주소'
+      lat: (lat ?? 37.5665) + jitter(),    // 중심 없으면 서울시청 근방
       lng: (lng ?? 126.9780) + jitter(),
       thumbnail: `https://picsum.photos/seed/${category}-${id}/120/80`,
       tags: [label],
     });
   }
 
-  // 데모: 4페이지까지만 존재하는 것으로
-  const hasMore = page < 4;
-
+  const hasMore = page < 4; // 데모 제한
   return { page, limit, hasMore, items };
 }
-
-
-
