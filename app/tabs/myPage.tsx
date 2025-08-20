@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, View, Text, StyleSheet, Image, Pressable, ScrollView } from 'react-native';
+import { SafeAreaView, View, Text, Image, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, Href, useRouter } from 'expo-router';
 import styles from '../styles/myPage_style.js'; // Assuming styles are defined in this file

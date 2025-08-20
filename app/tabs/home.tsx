@@ -5,7 +5,8 @@ import {
   PanResponder,
   Pressable,
   Text,
-  View
+  View,
+  StatusBar
 } from "react-native";
 import styles from "../styles/home_style.js";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -50,6 +51,8 @@ export default function HomePage() {
 
   return (
     <View style={styles.container}>
+      {/* 상태바 디폴트값 검정 */}
+      <StatusBar barStyle="dark-content" />
       <View style={[styles.topBox, { marginTop: insets.top }]}>
         <View style={styles.topBoxUpSide}>
           <Image
