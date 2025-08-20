@@ -25,7 +25,6 @@ export default StyleSheet.create({
     width: screenWidth,
     flexDirection: 'column',
     alignItems: 'flex-start',
-    marginTop: 75*scale,
 },
 
   topBoxUpSide: {

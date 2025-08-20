@@ -40,7 +40,6 @@ export default function TabsLayout() {
         // Android 그림자
         elevation: 10,
         justifyContent: 'flex-end',
-        zIndex: 10,
         position: 'fixed',
       },
       tabBarActiveTintColor: "#EA6844",
@@ -108,7 +107,7 @@ export default function TabsLayout() {
           />
         ),
       }}/>
-      
+
     </Tabs>
   );
 }

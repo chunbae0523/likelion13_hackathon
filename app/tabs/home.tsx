@@ -8,8 +8,11 @@ import {
   View
 } from "react-native";
 import styles from "../styles/home_style.js";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomePage() {
+
+    const insets = useSafeAreaInsets(); // 안전 영역 인셋 가져오기
 
   // 지역명 옆 화살표 애니메이션
   const rotateArrow = useRef(new Animated.Value(0)).current; // 회전값 상태 선언
@@ -47,7 +50,7 @@ export default function HomePage() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topBox}>
+      <View style={[styles.topBox, { marginTop: insets.top }]}>
         <View style={styles.topBoxUpSide}>
           <Image
             source={require("../../assets/images/title.png")}
