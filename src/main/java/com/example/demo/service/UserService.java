@@ -34,7 +34,7 @@ public class UserService {
     @Transactional
     public void withdraw(Long userId) {
         // 사용자가 작성한 게시글의 작성자 정보를 null로 변경
-        List<Post> userPosts = postRepository.findAllByAuthorId(userId);
+        List<Post> userPosts = postRepository.findAllByAuthor_Id(userId);
         for (Post post : userPosts) {
             post.setAuthor(null);
         }
