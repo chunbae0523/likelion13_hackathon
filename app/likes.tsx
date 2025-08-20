@@ -54,7 +54,7 @@ type NavItem = {
 
 const tabItems: ReadonlyArray<NavItem> = [
   { key: "home", label: "홈",        icon: "home-outline",                 route: "/(tabs)" as const },
-  { key: "community", label: "커뮤니티", icon: "chatbubble-ellipses-outline", route: "/(tabs)/community" as const },
+  { key: "community", label: "커뮤니티", icon: "chatbubble-ellipses-outline", route: "./(tabs)/community" as const },
   { key: "map", label: "지도",       icon: "location-outline",             route: "/(tabs)/map" as const },
   { key: "mypage", label: "마이페이지", icon: "person-outline",              route: "/(tabs)/mypage" as const },
 ];

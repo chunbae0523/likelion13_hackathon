@@ -30,7 +30,7 @@ const MULTIPLIER = 2;
 // ========================
 
 // ✅ 커스텀 북마크 아이콘(투명배경 PNG/SVG)을 프로젝트에 넣고 경로를 맞춰주세요.
-const BOOKMARK_ICON = require("../../assets/icons/bookmark-filled-outline.png");
+const BOOKMARK_ICON = require("../assets/images/icon.png");
 
 const baseImages = [
   "https://images.unsplash.com/photo-1511920170033-f8396924c348",
