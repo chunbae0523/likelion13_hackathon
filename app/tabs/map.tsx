@@ -306,6 +306,5 @@ const s = StyleSheet.create({
     right: 16,
     backgroundColor: "transparant",
     borderRadius: 50,
-    zIndex: 1000,
   },
 });
