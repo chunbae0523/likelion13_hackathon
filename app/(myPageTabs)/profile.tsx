@@ -1,4 +1,3 @@
-// app/(myPageTabs)/profile-view.tsx
 import React, { useEffect, useMemo } from "react";
 import {
   SafeAreaView,
@@ -36,7 +35,7 @@ type GridItem =
   | { id: string; type: "img"; uri: string }
   | { id: string; type: "placeholder"; chat?: boolean };
 
-export default function ProfileView() {
+export default function profile() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
@@ -94,7 +93,7 @@ export default function ProfileView() {
       <View style={[styles.header, { paddingTop: EXTRA_TOP }]}>
         <Link href="../" asChild>
           <Pressable hitSlop={10} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
+            <Ionicons name="chevron-back" size={26} />
           </Pressable>
         </Link>
         <Text style={styles.title} />
@@ -113,9 +112,9 @@ export default function ProfileView() {
         />
 
         <View style={styles.nameRow}>
-          <Text style={styles.nickname}>소문이</Text>
+          <Text style={styles.nickname}>소문난 카페</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>주민</Text>
+            <Text style={styles.badgeText}>사장님</Text>
           </View>
         </View>
 
@@ -234,7 +233,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontFamily: "Pretendard-SemiBold",
+    fontFamily: "Pretendard-Semibold",
     letterSpacing: -0.3,
   },
 

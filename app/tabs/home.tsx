@@ -6,14 +6,14 @@ import {
   Pressable,
   Text,
   View,
-  StatusBar
+  StatusBar,
 } from "react-native";
+import { router } from "expo-router";
 import styles from "../styles/home_style.js";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomePage() {
-
-    const insets = useSafeAreaInsets(); // 안전 영역 인셋 가져오기
+  const insets = useSafeAreaInsets(); // 안전 영역 인셋 가져오기
 
   // 지역명 옆 화살표 애니메이션
   const rotateArrow = useRef(new Animated.Value(0)).current; // 회전값 상태 선언
@@ -39,12 +39,15 @@ export default function HomePage() {
     PanResponder.create({
       onStartShouldSetPanResponder: () => true, // 터치 시작 시 panResponder 활성화
       onPanResponderMove: Animated.event(
-        [null, {dx: pan.x}],
+        [null, { dx: pan.x }],
         { useNativeDriver: false } // 위치값 XY는 nativeDriver 지원 안 함.
       ),
       onPanResponderRelease: () => {
         // 터치 해제 시 애니메이션 초기화
-        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
       },
     })
   ).current;
@@ -53,7 +56,8 @@ export default function HomePage() {
     <View style={styles.container}>
       {/* 상태바 디폴트값 검정 */}
       <StatusBar barStyle="dark-content" />
-      <View style={[styles.topBox, { marginTop: insets.top }]}>
+
+      <View style={[styles.topBox, { marginTop: insets.top + 8 }]}>
         <View style={styles.topBoxUpSide}>
           <Image
             source={require("../../assets/images/title.png")}
@@ -64,10 +68,12 @@ export default function HomePage() {
               source={require("../../assets/images/search.png")}
               style={styles.topBoxSearch}
             />
-            <Image
-              source={require("../../assets/images/notice.png")}
-              style={styles.topBoxNotification}
-            />
+            <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
+              <Image
+                source={require("../../assets/images/notice.png")}
+                style={styles.topBoxNotification}
+              />
+            </Pressable>
           </View>
         </View>
 
@@ -97,7 +103,8 @@ export default function HomePage() {
       </View>
 
       <View style={styles.middleAdBox}>
-        <Animated.Image {...panResponder.panHandlers} 
+        <Animated.Image
+          {...panResponder.panHandlers}
           style={[pan.getLayout(), styles.middleAdImg]}
           source={require("../../assets/images/ad.jpg")}
           resizeMode="contain"
@@ -163,7 +170,6 @@ export default function HomePage() {
             </View>
           </View>
         </View>
-
       </View>
     </View>
   );

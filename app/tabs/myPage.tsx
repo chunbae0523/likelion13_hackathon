@@ -1,9 +1,85 @@
-import React from 'react';
-import { SafeAreaView, View, Text, Image, Pressable, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+// app/(tabs)/myPage.tsx
+import React, { useState } from 'react';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  Image,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  Modal,
+  StyleSheet,
+} from 'react-native';
 import { Link, Href, useRouter } from 'expo-router';
-import styles from '../styles/myPage_style.js'; // Assuming styles are defined in this file
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import styles from '../styles/myPage_style.js';
 
+//icon Import
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Octicons from '@expo/vector-icons/Octicons';
+import { Ionicons } from '@expo/vector-icons';
+
+const EXTRA_TOP = 6;
+
+/** ✅ 회색 둥근(Pill) 버튼 — 로컬 스타일 (외부와 충돌 방지) */
+const pill = StyleSheet.create({
+  box: {
+    backgroundColor: '#EFEFF1',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E2E3E7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 14,
+    color: '#6B6B6B',
+    fontFamily: 'Pretendard-Semibold',
+  },
+});
+
+/** 모달 전용 로컬 스타일 */
+const local = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  text: { fontSize: 15, marginBottom: 14, textAlign: 'center' },
+  actions: { flexDirection: 'row' },
+  btn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtn: { backgroundColor: '#EFEFF0' },
+  confirmBtn: { backgroundColor: '#FF6B3D' },
+  cancelText: { fontSize: 15, color: '#444', fontFamily: 'Pretendard-Medium' },
+  confirmText: { fontSize: 15, color: '#fff', fontFamily: 'Pretendard-Bold' },
+  ml10: { marginLeft: 10 },
+  pressed: { opacity: 0.6 },
+});
+
+/** 통계 박스 */
 const StatBox = ({ label, value }: { label: string; value: string }) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
@@ -11,11 +87,22 @@ const StatBox = ({ label, value }: { label: string; value: string }) => (
   </View>
 );
 
-// 일반 행 (아이콘 있는 경우)
-const RowItem = ({ icon, label, href }: { icon: keyof typeof Ionicons.glyphMap; label: string; href: Href }) => {
+/** 일반 행 (아이콘 + 텍스트 + →) */
+const RowItem = ({
+  icon,
+  label,
+  href,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  href: Href;
+}) => {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push(href)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}>
+    <Pressable
+      onPress={() => router.push(href)}
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
+    >
       <View style={styles.rowLeft}>
         <Ionicons name={icon} size={22} />
         <Text style={styles.rowText} numberOfLines={1}>{label}</Text>
@@ -27,39 +114,80 @@ const RowItem = ({ icon, label, href }: { icon: keyof typeof Ionicons.glyphMap; 
   );
 };
 
-// 설정 전용 (아이콘/화살표/구분선 없음)
+/** 설정 전용 (텍스트만) */
 const SettingsItem = ({ label, href }: { label: string; href: Href }) => {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.push(href)} style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}>
+    <Pressable
+      onPress={() => router.push(href)}
+      style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}
+    >
       <Text style={styles.settingsText} numberOfLines={1}>{label}</Text>
     </Pressable>
   );
 };
 
 export default function MyPage() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  // 단일 모달로 로그아웃/탈퇴 구분
+  const [confirmType, setConfirmType] = useState<null | 'logout' | 'delete'>(null);
+  const closeModal = () => setConfirmType(null);
+
+  const message =
+    confirmType === 'logout'
+      ? '로그아웃 하시겠습니까?'
+      : confirmType === 'delete'
+      ? '탈퇴하시겠습니까?'
+      : '';
+
+  const confirmLabel = confirmType === 'delete' ? '탈퇴하기' : '로그아웃';
+
+  const handleConfirm = async () => {
+    const type = confirmType;
+    closeModal();
+
+    if (type === 'logout') {
+      // TODO: 실제 로그아웃 로직
+      // await auth.signOut();
+      // router.replace('/login');
+    } else if (type === 'delete') {
+      // TODO: 실제 탈퇴 로직
+      // await api.deleteAccount();
+      // router.replace('/goodbye');
+    }
+  };
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
+      <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.container}>
         {/* Header */}
         <View style={styles.headerRow}>
           <Text style={styles.title}>마이페이지</Text>
           <View style={styles.headerIcons}>
-            <Ionicons name="notifications-outline" size={22} style={styles.headerIcon} />
-            <Ionicons name="settings-outline" size={22} />
+            <Pressable onPress={() => router.push('/(myPageTabs)/notice')}>
+              <Octicons name="bell-fill" size={25} color="#C2C2C2" />
+            </Pressable>
+            <MaterialIcons name="settings" size={25} color="#C2C2C2" />
           </View>
         </View>
 
         {/* Profile */}
-        <View style={styles.profileCard}>
+        <View style={[styles.profileCard, { overflow: 'visible' }]}>
           <Image source={{ uri: 'https://i.pravatar.cc/100?img=3' }} style={styles.avatar} />
           <View style={{ flex: 1 }}>
             <Text style={styles.nickname}>소문이</Text>
             <Text style={styles.username}>@username123</Text>
           </View>
+
+          {/** ✅ Link asChild 유지 + 스타일은 내부 View(pill.box)에 적용 */}
           <Link href="/(myPageTabs)/profile-view" asChild>
-            <Pressable style={({ pressed }) => [styles.profileBtn, pressed && { opacity: 0.7 }]}>
-              <Text style={styles.profileBtnText}>프로필 보기</Text>
+            <Pressable style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
+              <View style={pill.box}>
+                <Text style={pill.text}>프로필 보기</Text>
+              </View>
             </Pressable>
           </Link>
         </View>
@@ -96,10 +224,33 @@ export default function MyPage() {
         <View style={styles.settingsCard}>
           <SettingsItem label="내 동네 설정" href="/(settings)/neighborhood" />
           <SettingsItem label="언어설정" href="/(settings)/language" />
-          <SettingsItem label="로그아웃" href="/(settings)/logout" />
-          <SettingsItem label="탈퇴하기" href="/(settings)/delete-account" />
+
+          <Pressable onPress={() => setConfirmType('logout')} style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}>
+            <Text style={styles.settingsText} numberOfLines={1}>로그아웃</Text>
+          </Pressable>
+
+          <Pressable onPress={() => setConfirmType('delete')} style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}>
+            <Text style={styles.settingsText} numberOfLines={1}>탈퇴하기</Text>
+          </Pressable>
         </View>
       </ScrollView>
+
+      {/* 단일 확인 모달 */}
+      <Modal transparent visible={confirmType !== null} animationType="fade" onRequestClose={closeModal}>
+        <View style={local.overlay}>
+          <View style={local.card}>
+            <Text style={local.text}>{message}</Text>
+            <View style={local.actions}>
+              <Pressable onPress={closeModal} style={({ pressed }) => [local.btn, local.cancelBtn, pressed && local.pressed]}>
+                <Text style={local.cancelText}>취소</Text>
+              </Pressable>
+              <Pressable onPress={handleConfirm} style={({ pressed }) => [local.btn, local.confirmBtn, local.ml10, pressed && local.pressed]}>
+                <Text style={local.confirmText}>{confirmLabel}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
