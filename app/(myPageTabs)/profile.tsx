@@ -36,7 +36,7 @@ type GridItem =
   | { id: string; type: "img"; uri: string }
   | { id: string; type: "placeholder"; chat?: boolean };
 
-export default function ProfileViewScreen() {
+export default function profile() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 

@@ -36,7 +36,7 @@ type GridItem =
   | { id: string; type: "img"; uri: string }
   | { id: string; type: "placeholder"; chat?: boolean };
 
-export default function ProfileViewScreen() {
+export default function ProfileView() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
@@ -47,14 +47,42 @@ export default function ProfileViewScreen() {
   // 9칸 = 사진 7 + 말풍선 placeholder 2
   const data = useMemo<GridItem[]>(
     () => [
-      { id: "1", type: "img", uri: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600" },
-      { id: "2", type: "img", uri: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600" },
-      { id: "3", type: "img", uri: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600" },
-      { id: "4", type: "img", uri: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600" },
-      { id: "5", type: "img", uri: "https://images.unsplash.com/photo-1548946526-f69e2424cf45?w=600" },
+      {
+        id: "1",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600",
+      },
+      {
+        id: "2",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600",
+      },
+      {
+        id: "3",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600",
+      },
+      {
+        id: "4",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600",
+      },
+      {
+        id: "5",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1548946526-f69e2424cf45?w=600",
+      },
       { id: "6", type: "placeholder", chat: true },
-      { id: "7", type: "img", uri: "https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600" },
-      { id: "8", type: "img", uri: "https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600" },
+      {
+        id: "7",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600",
+      },
+      {
+        id: "8",
+        type: "img",
+        uri: "https://images.unsplash.com/photo-1488900128323-21503983a07e?w=600",
+      },
       { id: "9", type: "placeholder", chat: true },
     ],
     []
@@ -78,7 +106,9 @@ export default function ProfileViewScreen() {
       {/* 프로필 상단 */}
       <View style={styles.topWrap}>
         <Image
-          source={{ uri: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800" }}
+          source={{
+            uri: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800",
+          }}
           style={styles.avatar}
         />
 
@@ -116,10 +146,20 @@ export default function ProfileViewScreen() {
 
         {/* 버튼 2개 — 화면 좌우 꽉 채움 */}
         <View style={styles.btnRow}>
-          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBtn,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
             <Text style={styles.actionBtnText}>프로필 편집</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBtn,
+              pressed && { opacity: 0.7 },
+            ]}
+          >
             <Text style={styles.actionBtnText}>프로필 공유</Text>
           </Pressable>
         </View>
@@ -136,8 +176,18 @@ export default function ProfileViewScreen() {
       );
     }
     return (
-      <View style={[styles.cell, { width: CELL, height: CELL, backgroundColor: "#E9E9EB" }]}>
-        <Ionicons name="chatbubble-outline" size={16} color="#000" style={styles.chatIcon} />
+      <View
+        style={[
+          styles.cell,
+          { width: CELL, height: CELL, backgroundColor: "#E9E9EB" },
+        ]}
+      >
+        <Ionicons
+          name="chatbubble-outline"
+          size={16}
+          color="#000"
+          style={styles.chatIcon}
+        />
       </View>
     );
   };
@@ -154,7 +204,8 @@ export default function ProfileViewScreen() {
         ListHeaderComponent={ListHeader}
         contentContainerStyle={{
           gap: GAP,
-          paddingBottom: TAB_BAR_HEIGHT + Math.max(insets.bottom, 8) + LIST_BOTTOM_EXTRA,
+          paddingBottom:
+            TAB_BAR_HEIGHT + Math.max(insets.bottom, 8) + LIST_BOTTOM_EXTRA,
         }}
         showsVerticalScrollIndicator={false}
       />
@@ -206,13 +257,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   nickname: { fontSize: 22, fontFamily: "Pretendard-Semibold" },
-  badge: { backgroundColor: BADGE_BG, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
+  badge: {
+    backgroundColor: BADGE_BG,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
   badgeText: { color: "#fff", fontSize: 14, fontFamily: "Pretendard-Medium" },
-  username: { marginTop: 4, fontSize: 14, color: "#A0A0A0", fontFamily: "Pretendard-Medium" },
-  locationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  locationText: { fontSize: 13, color: "#999", fontFamily: "Pretendard-Semibold" },
+  username: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#A0A0A0",
+    fontFamily: "Pretendard-Medium",
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 4,
+  },
+  locationText: {
+    fontSize: 13,
+    color: "#999",
+    fontFamily: "Pretendard-Semibold",
+  },
 
-  // ✅ Stats — 좌우로 더 넓게  
+  // ✅ Stats — 좌우로 더 넓게
   statsRow: {
     marginTop: 16,
     flexDirection: "row",
@@ -235,7 +305,11 @@ const styles = StyleSheet.create({
     borderRightColor: "rgba(0,0,0,0.12)",
   },
   statValue: { fontSize: 18, fontFamily: "Pretendard-Bold", color: "#111" },
-  statLabel: { fontSize: 12, color: "#8C8C8C", fontFamily: "Pretendard-Regular" },
+  statLabel: {
+    fontSize: 12,
+    color: "#8C8C8C",
+    fontFamily: "Pretendard-Regular",
+  },
 
   // Buttons — 좌우 꽉
   btnRow: {
@@ -253,10 +327,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  actionBtnText: { fontSize: 14, color: "#333", fontFamily: "Pretendard-Medium" },
+  actionBtnText: {
+    fontSize: 14,
+    color: "#333",
+    fontFamily: "Pretendard-Medium",
+  },
 
   // Grid
-  cell: { aspectRatio: 1, borderRadius: 10, overflow: "hidden", position: "relative", backgroundColor: "#f2f2f2" },
+  cell: {
+    aspectRatio: 1,
+    borderRadius: 10,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#f2f2f2",
+  },
   image: { width: "100%", height: "100%" },
   chatIcon: { position: "absolute", right: 6, bottom: 6 },
 });
