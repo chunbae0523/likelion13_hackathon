@@ -1,7 +1,9 @@
 import { useFonts } from "expo-font";
-import { Stack, router, useSegments } from "expo-router";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import "react-native-gesture-handler";
+
 import Feather from "@expo/vector-icons/Feather";
+import { Stack, router, useSegments } from "expo-router";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
