@@ -11,10 +11,14 @@ import {
   Modal,
   StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Link, Href, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from '../styles/myPage_style.js';
+
+//icon Import
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Octicons from '@expo/vector-icons/Octicons';
+import { Ionicons } from '@expo/vector-icons';
 
 const EXTRA_TOP = 6;
 
@@ -69,8 +73,8 @@ const local = StyleSheet.create({
   },
   cancelBtn: { backgroundColor: '#EFEFF0' },
   confirmBtn: { backgroundColor: '#FF6B3D' },
-  cancelText: { fontSize: 15, color: '#444', fontWeight: '600' },
-  confirmText: { fontSize: 15, color: '#fff', fontWeight: '700' },
+  cancelText: { fontSize: 15, color: '#444', fontFamily: 'Pretendard-Medium' },
+  confirmText: { fontSize: 15, color: '#fff', fontFamily: 'Pretendard-Bold' },
   ml10: { marginLeft: 10 },
   pressed: { opacity: 0.6 },
 });
@@ -164,13 +168,9 @@ export default function MyPage() {
           <Text style={styles.title}>마이페이지</Text>
           <View style={styles.headerIcons}>
             <Pressable onPress={() => router.push('/(myPageTabs)/notice')}>
-              <Image
-                source={require('../../assets/images/notice.png')} // ✅ 가지고 있는 이미지 경로
-                style={[styles.headerIcon, { width: 22, height: 22 }]} // 크기 맞춤
-                resizeMode="contain"
-              />
+              <Octicons name="bell-fill" size={25} color="#C2C2C2" />
             </Pressable>
-            <Ionicons name="settings-outline" size={22} />
+            <MaterialIcons name="settings" size={25} color="#C2C2C2" />
           </View>
         </View>
 

@@ -70,7 +70,7 @@ export default function ScrapsScreen() {
       <View style={[styles.header, { paddingTop: EXTRA_TOP }]}>
         <Link href="../" asChild>
           <Pressable hitSlop={10} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={26} />
+            <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
           </Pressable>
         </Link>
         <Text style={styles.title}>저장한 게시물</Text>
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontFamily: "Pretendard-Semibold",
+    fontFamily: "Pretendard-SemiBold",
     letterSpacing: -0.3,
   },
 

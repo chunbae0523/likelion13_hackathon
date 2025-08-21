@@ -17,10 +17,10 @@ export default function RootLayout() {
     "Pretendard-ExtraLight": require("../assets/fonts/Pretendard-ExtraLight.ttf"),
   });
 
-    // 글쓰기 버튼을 숨길 경로
+    // 글쓰기 버튼을 나타낼 경로
   const pathname = usePathname();
-  const hiddenRoutes = ["/somunWrite"];
-  const hideButton = hiddenRoutes.some((route) => pathname.startsWith(route));
+  const showRoutes = ["/tabs"];
+  const showButton = showRoutes.some((route) => pathname.startsWith(route));
 
   if (!fontsLoaded) {
     return null;
@@ -32,7 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="tabs" options={{ headerShown: false }} />
       </Stack>
 
-      {!hideButton && (
+      {showButton && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => {

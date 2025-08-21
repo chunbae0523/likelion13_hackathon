@@ -66,7 +66,7 @@ export default function ProfileViewScreen() {
       <View style={[styles.header, { paddingTop: EXTRA_TOP }]}>
         <Link href="../" asChild>
           <Pressable hitSlop={10} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={26} />
+            <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
           </Pressable>
         </Link>
         <Text style={styles.title} />
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontFamily: "Pretendard-Semibold",
+    fontFamily: "Pretendard-SemiBold",
     letterSpacing: -0.3,
   },
 
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  nickname: { fontSize: 22, fontFamily: "Pretendard-Semibold" },
+  nickname: { fontSize: 22, fontFamily: "Pretendard-SemiBold" },
   badge: { backgroundColor: BADGE_BG, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
   badgeText: { color: "#fff", fontSize: 14, fontFamily: "Pretendard-Medium" },
   username: { marginTop: 4, fontSize: 14, color: "#A0A0A0", fontFamily: "Pretendard-Medium" },
   locationRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  locationText: { fontSize: 13, color: "#999", fontFamily: "Pretendard-Semibold" },
+  locationText: { fontSize: 13, color: "#999", fontFamily: "Pretendard-SemiBold" },
 
   // ✅ Stats — 좌우로 더 넓게  
   statsRow: {

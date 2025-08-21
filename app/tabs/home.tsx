@@ -8,6 +8,7 @@ import {
   View,
   StatusBar
 } from "react-native";
+import { router } from "expo-router";
 import styles from "../styles/home_style.js";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -53,6 +54,7 @@ export default function HomePage() {
     <View style={styles.container}>
       {/* 상태바 디폴트값 검정 */}
       <StatusBar barStyle="dark-content" />
+
       <View style={[styles.topBox, { marginTop: insets.top }]}>
         <View style={styles.topBoxUpSide}>
           <Image
@@ -64,10 +66,12 @@ export default function HomePage() {
               source={require("../../assets/images/search.png")}
               style={styles.topBoxSearch}
             />
-            <Image
-              source={require("../../assets/images/notice.png")}
-              style={styles.topBoxNotification}
-            />
+            <Pressable onPress={() => router.push('/(myPageTabs)/notice')}>
+              <Image
+                source={require("../../assets/images/notice.png")}
+                style={styles.topBoxNotification}
+              />
+            </Pressable>
           </View>
         </View>
 
