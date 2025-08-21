@@ -1,5 +1,6 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import "react-native-gesture-handler";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -20,10 +21,7 @@ export default function RootLayout() {
 
   return (
     <Stack>
-      <Stack.Screen
-        name="tabs"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="tabs" options={{ headerShown: false }} />
     </Stack>
   );
 }

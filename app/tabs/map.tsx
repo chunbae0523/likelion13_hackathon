@@ -1,27 +1,29 @@
-import React, { useMemo, useRef, useState, useCallback } from "react";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  StyleSheet,
-  View,
-  FlatList,
-  Text,
-  Image,
   Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import MapView, {
-  PROVIDER_GOOGLE,
   Marker,
+  PROVIDER_GOOGLE,
   type Region,
 } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomSheet from "../../components/BottomSheet";
 import MapFilterBar, { FilterKey } from "../../components/MapFilterBar"; //FilterKey 자체 선언 -> MapFilterBar에서 선언한 Key 사용
 import PlaceCard from "../../components/PlaceCard";
-import BottomSheet from "../../components/BottomSheet";
 import { Place } from "../../src/types/Place";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const { height: SCREEN_H } = Dimensions.get("window");
 const { height: H } = Dimensions.get("window");
-
+const TOP_WHITE_H = 70; // 상단 검색 영역 대략 높이(패딩 포함)
+const TOP_MARGIN = 16; // 상단 여유 공간
+const MAX_SHEET = Math.round(SCREEN_H * 0.8);
 const DEFAULT: Region = {
   latitude: 37.5665,
   longitude: 126.978,
@@ -30,7 +32,7 @@ const DEFAULT: Region = {
 };
 
 export default function MapPage() {
-  const insets = useSafeAreaInsets(); // 안전 영역 인셋 가져오기
+  const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView | null>(null);
   const listRef = useRef<FlatList<Place> | null>(null);
   const [filters, setFilters] = useState<FilterKey[]>([]);
@@ -111,17 +113,16 @@ export default function MapPage() {
       {/* 상단 검색 영역 */}
       <View style={s.topWhite}>
         <View style={s.searchBar}>
-          <FontAwesome name="search" size={25} style={s.searchIcon} color="#C2C2C2" />
-          {/* <Image
-            source={require("../../assets/images/search_light.png")}
+          <FontAwesome
+            name="search"
+            size={25}
             style={s.searchIcon}
-          /> */}
-          {/* 이미지 해상도 문제로 FontAwesome 아이콘으로 대체 */}
+            color="#C2C2C2"
+          />
           <Text style={s.searchPh}>현재 지역 소문 검색하기</Text>
         </View>
       </View>
 
-      {/* 지도 + 칩 */}
       <View style={s.mapContainer}>
         <MapView
           ref={mapRef}
@@ -159,9 +160,8 @@ export default function MapPage() {
         </View>
       </View>
 
-      {/* 바텀시트 - 컴포넌트화 */}
       <BottomSheet
-        snapPoints={[350, Math.round(SCREEN_H * 0.36), H - 1]}
+        snapPoints={[350, Math.round(SCREEN_H * 0.36), MAX_SHEET]}
         initialSnap={0}
       >
         <View style={{ paddingBottom: 220 }}>
