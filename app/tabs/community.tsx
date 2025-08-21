@@ -76,6 +76,44 @@ const FEED = [
       "투표",
     ],
   },
+  // 동일 게시물 하나 더
+  {
+    id: "2",
+    profile: {
+      name: "소문난 카페",
+      avatar:
+        "https://images.unsplash.com/photo-1517705008128-361805f42e86?w=256&auto=format&fit=crop&q=60",
+      location: "연수구 홍콩로 135",
+      district: "연수구",
+      timeAgo: "2시간 전",
+    },
+    content: {
+      text: "라떼 메뉴 중 어떤 게 더 끌리시나요??",
+      photo:
+        "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&auto=format&fit=crop&q=60",
+      poll: {
+        options: [
+          { id: "vanilla" as const, label: "바닐라 라떼", votes: 45 },
+          { id: "matcha" as const, label: "말차 라떼", votes: 58 },
+        ],
+        myChoice: null as null | "vanilla" | "matcha",
+      },
+    },
+    stats: { likes: 1700, comments: 1735, saved: true, liked: false },
+    author: "username 123",
+    caption: "맛있겠다",
+    hashtags: [
+      "인천",
+      "연수구",
+      "소문난 카페",
+      "분위기 좋은 카페",
+      "카페",
+      "바닐라 라떼",
+      "말차 라떼",
+      "신메뉴",
+      "투표",
+    ],
+  },
 ];
 
 const FEED_POPULAR = [
@@ -83,6 +121,11 @@ const FEED_POPULAR = [
     ...FEED[0],
     id: "1-pop",
     content: { ...FEED[0].content, text: "요즘 뭐가 더 핫한가요? (인기글)" },
+  },
+  {
+    ...FEED[1],
+    id: "2-pop",
+    content: { ...FEED[1].content, text: "요즘 뭐가 더 핫한가요? (인기글)" },
   },
 ];
 
@@ -101,7 +144,6 @@ const Header: React.FC<{
 }> = ({ district, onOpenPicker, activeTab, onChangeTab }) => (
   <View
     style={{
-      // ⬅️ 헤더에 보더 두지 않음(알림 아이콘 잘림 방지)
       paddingHorizontal: 16,
       paddingTop: 8,
       paddingBottom: 10,
@@ -119,7 +161,7 @@ const Header: React.FC<{
         onPress={onOpenPicker}
         style={{ flexDirection: "row", alignItems: "center" }}
       >
-        {/* ✅ 연수구: Pretendard-Semibold, fs 22 */}
+        {/* 연수구: Pretendard-Semibold, fs 22 */}
         <Text
           style={{
             fontFamily: "Pretendard-SemiBold",
@@ -137,7 +179,6 @@ const Header: React.FC<{
           style={{ width: 22, height: 22 }}
         />
         <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
-          {/* ✅ 종 아이콘 상단 클리핑 방지 */}
           <Image
             source={require("../../assets/images/notice.png")}
             style={{
@@ -184,27 +225,38 @@ const Header: React.FC<{
       </Pressable>
     </View>
 
-    {/* ✅ 탭 아래 전용: 회색 라인 + (한쪽만) 주황 라인 — 스크린 끝까지 */}
+    {/* ✅ 회색선(기준)과 주황선(인디케이터)을 '완전히 같은 y'로 */}
     <View
       style={{
         marginTop: 6,
-        height: 1,
-        backgroundColor: COLOR.border, // 회색 얇은 선
+        height: 0, // ← 높이를 0으로. 추가 공간 없음
+        marginHorizontal: -16, // 화면 끝까지
         position: "relative",
-        marginHorizontal: -16, // ← 헤더 패딩 상쇄 → 화면 끝까지
       }}
     >
+      {/* 회색 기준선 */}
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 1,
+          backgroundColor: COLOR.border,
+        }}
+      />
+      {/* 주황 인디케이터 (회색선과 같은 y, 두께만 2px) */}
       <View
         style={[
           {
             position: "absolute",
-            top: -1, // 회색선과 겹치게
+            bottom: 0,
             height: 2,
             backgroundColor: COLOR.primary,
           },
           activeTab === "latest"
-            ? { left: 0, right: "50%" } // 좌측 끝 → 가운데
-            : { left: "50%", right: 0 }, // 가운데 → 우측 끝
+            ? { left: 0, right: "50%" } // 좌 → 중앙
+            : { left: "50%", right: 0 }, // 중앙 → 우
         ]}
       />
     </View>
@@ -223,7 +275,7 @@ const DistrictPicker: React.FC<{
       transparent
       animationType="fade"
       onRequestClose={onClose}
-      statusBarTranslucent // 상단 오버레이 끊김 방지
+      statusBarTranslucent
     >
       <Pressable
         style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}
@@ -495,18 +547,6 @@ const CommunityScreen: React.FC = () => {
 
   const data = useMemo(() => (tab === "latest" ? FEED : FEED_POPULAR), [tab]);
 
-  const ListHeader = useMemo(
-    () => (
-      <Header
-        district={district}
-        onOpenPicker={() => setPickerOpen(true)}
-        activeTab={tab}
-        onChangeTab={setTab}
-      />
-    ),
-    [district, tab]
-  );
-
   const Item = ({ item }: { item: (typeof FEED)[number] }) => (
     <PostCard item={item} />
   );
@@ -521,11 +561,18 @@ const CommunityScreen: React.FC = () => {
     >
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
+      {/* 헤더: 리스트 밖에 고정 */}
+      <Header
+        district={district}
+        onOpenPicker={() => setPickerOpen(true)}
+        activeTab={tab}
+        onChangeTab={setTab}
+      />
+
       <FlatList
         data={data}
         renderItem={Item}
         keyExtractor={(i) => i.id}
-        ListHeaderComponent={ListHeader}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       />

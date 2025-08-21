@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const EXTRA_TOP = 8;               // 상태바와 제목 사이 여분
+const EXTRA_TOP = 8; // 상태바와 제목 사이 여분
 
 export default function LanguageScreen() {
   const navigation = useNavigation();
@@ -36,7 +36,7 @@ export default function LanguageScreen() {
     if (pendingLang) setCurrentLang(pendingLang);
     setModalVisible(false);
     setPendingLang(null);
-    // TODO: 실제 i18n 변경 로직을 여기에 연결하세요.
+    // TODO: 실제 i18n 변경 로직 연결
   };
 
   const cancel = () => {
@@ -53,7 +53,7 @@ export default function LanguageScreen() {
     <SafeAreaView style={[styles.safe, { paddingTop: insets.top + 12 }]}>
       <StatusBar barStyle="dark-content" />
 
-      {/* ===== 상단 커스텀 헤더 (likes.tsx와 동일 결) ===== */}
+      {/* ===== 상단 커스텀 헤더 ===== */}
       <View style={[styles.header, { paddingTop: EXTRA_TOP }]}>
         <Link href="../" asChild>
           <Pressable hitSlop={10} style={styles.backBtn}>
@@ -61,7 +61,6 @@ export default function LanguageScreen() {
           </Pressable>
         </Link>
         <Text style={styles.title}>언어 설정</Text>
-        {/* 우측 점3개 아이콘(동작 없음, 자리 맞춤용) */}
         <View style={{ width: 26 }} />
       </View>
 
@@ -83,7 +82,13 @@ export default function LanguageScreen() {
       </View>
 
       {/* ===== 중앙 팝업 모달 ===== */}
-      <Modal transparent visible={modalVisible} animationType="fade" onRequestClose={cancel}>
+      <Modal
+        transparent
+        visible={modalVisible}
+        animationType="fade"
+        onRequestClose={cancel}
+        statusBarTranslucent // ✅ 상태바 영역까지 오버레이 적용
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalText}>{pendingLang ? message : ""}</Text>
@@ -91,13 +96,21 @@ export default function LanguageScreen() {
             <View style={styles.modalActions}>
               <Pressable
                 onPress={cancel}
-                style={({ pressed }) => [styles.modalBtn, styles.cancelBtn, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.modalBtn,
+                  styles.cancelBtn,
+                  pressed && styles.pressed,
+                ]}
               >
                 <Text style={styles.cancelText}>취소</Text>
               </Pressable>
               <Pressable
                 onPress={confirm}
-                style={({ pressed }) => [styles.modalBtn, styles.confirmBtn, pressed && styles.pressed]}
+                style={({ pressed }) => [
+                  styles.modalBtn,
+                  styles.confirmBtn,
+                  pressed && styles.pressed,
+                ]}
               >
                 <Text style={styles.confirmText}>확인</Text>
               </Pressable>
@@ -112,7 +125,7 @@ export default function LanguageScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
 
-  // ----- Header (likes.tsx에서 가져옴) -----
+  // ----- Header -----
   header: {
     paddingHorizontal: 12,
     paddingBottom: 16,
@@ -169,8 +182,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  modalText: { fontSize: 15, marginBottom: 14, textAlign: "center", fontFamily: "Pretendard-Semibold" },
-  modalActions: { flexDirection: "row", gap: 10, justifyContent: "space-between" },
+  modalText: {
+    fontSize: 15,
+    marginBottom: 14,
+    textAlign: "center",
+    fontFamily: "Pretendard-Semibold",
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+  },
   modalBtn: {
     flex: 1,
     paddingVertical: 10,
@@ -180,6 +202,14 @@ const styles = StyleSheet.create({
   },
   cancelBtn: { backgroundColor: "#EFEFF0" },
   confirmBtn: { backgroundColor: "#FF6B3D" },
-  cancelText: { fontSize: 15, color: "#444", fontFamily: "Pretendard-Semibold" },
-  confirmText: { fontSize: 15, color: "#fff", fontFamily: "Pretendard-Semibold" },
+  cancelText: {
+    fontSize: 15,
+    color: "#444",
+    fontFamily: "Pretendard-Semibold",
+  },
+  confirmText: {
+    fontSize: 15,
+    color: "#fff",
+    fontFamily: "Pretendard-Semibold",
+  },
 });
