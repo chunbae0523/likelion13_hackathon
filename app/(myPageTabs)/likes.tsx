@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Pretendard-Semibold",
     letterSpacing: -0.3,
   },
 
