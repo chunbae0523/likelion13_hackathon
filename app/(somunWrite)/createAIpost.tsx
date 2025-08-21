@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Import Icons
 import TitleIcon from "../../assets/images/title.svg";
+import ImageUploadIcon from "../../assets/images/image_upload.svg";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function createAIposts() {
@@ -25,7 +26,7 @@ export default function createAIposts() {
 
   // 입력값 상태 관리
   const [text, setText] = React.useState("");
-  const maxLength = 20; // 최대 글자 수
+  const maxLength = 200; // 최대 글자 수
   const onChangeText = (input: string) => {
     if (input.length <= maxLength) {
       setText(input);
@@ -33,7 +34,12 @@ export default function createAIposts() {
   };
 
   return (
-    <View style={[styles.safe, { paddingTop: insets.top + 8 }]}>
+    <View
+      style={[
+        styles.safe,
+        { paddingTop: insets.top + 8, paddingBottom: insets.bottom },
+      ]}
+    >
       {/* 상단 커스텀 헤더 */}
       <View style={[styles.header, { marginTop: 8 }]}>
         <Link href="../" asChild>
@@ -52,24 +58,33 @@ export default function createAIposts() {
 
       {/* 중앙 입력란 */}
       <View style={styles.inputContainer}>
-        <View style={styles.inputTextContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="AI 홍보물 내용을 입력하세요."
-            value={text}
-            onChangeText={onChangeText}
-            multiline
-          />
+        <TextInput
+          style={styles.inputText}
+          placeholder="참조 이미지를 업로드하거나 글을 적어서 홍보물에 대해 설명해주세요! (자세한 정보들이 들어갈수록 더 멋진 게시물이 탄생할거에요! ex) 행사기간, 홍보 상품, 장소 등)"
+          placeholderTextColor={"#C2C2C2"}
+          value={text}
+          onChangeText={onChangeText}
+          multiline
+        />
+        <View style={styles.inputBottomContainer}>
+          <TouchableOpacity onPress={() => {}} activeOpacity={0.8}>
+            <View style={styles.imageUploadContainer}>
+              <Text style={styles.imageUploadText}>이미지</Text>
+              <ImageUploadIcon width={15} height={15} />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.textCounter}>
+            {text.length}/{maxLength}
+          </Text>
         </View>
-        <View style={styles.inputBottomContainer}></View>
       </View>
 
       {/* 생성하기 버튼 */}
-      <View style={styles.createButtonContainer}>
-        <Pressable style={styles.createButton}>
+      <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
+        <View style={styles.createButtonContainer}>
           <Text style={styles.createButtonText}>생성하기</Text>
-        </Pressable>
-      </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }

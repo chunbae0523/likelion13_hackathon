@@ -1,4 +1,3 @@
-// app/(myPageTabs)/profile-view.tsx
 import React, { useEffect, useMemo } from "react";
 import {
   SafeAreaView,

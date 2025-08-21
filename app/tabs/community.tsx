@@ -12,7 +12,16 @@ import {
   Platform,
   Modal,
 } from "react-native";
-import { Ionicons, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
+
+/** 모든 Text 기본 폰트를 Pretendard로 */
+(Text as any).defaultProps = {
+  ...(Text as any).defaultProps,
+  style: [
+    ((Text as any).defaultProps && (Text as any).defaultProps.style) || {},
+    { fontFamily: "Pretendard-Regular" },
+  ],
+};
 
 // ===== Theme =====
 const COLOR = {
@@ -25,7 +34,7 @@ const COLOR = {
   chip: "#FAFAFA",
 };
 
-// 투표 얇은 바 높이 (약 2.5배)
+// 투표 얇은 바 높이
 const POLL_THIN_H = 50;
 
 // ===== Data =====
@@ -44,7 +53,6 @@ const FEED = [
       text: "라떼 메뉴 중 어떤 게 더 끌리시나요??",
       photo:
         "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=1200&auto=format&fit=crop&q=60",
-      // 초기 비율: 45.3 / 57.9 근사
       poll: {
         options: [
           { id: "vanilla" as const, label: "바닐라 라떼", votes: 45 },
@@ -70,7 +78,6 @@ const FEED = [
   },
 ];
 
-// 🔸 인기글 탭에서 보여줄, 글자만 다른 게시물(최소 변경)
 const FEED_POPULAR = [
   {
     ...FEED[0],
@@ -84,7 +91,6 @@ function numberToK(n: number) {
   return `${n}`;
 }
 
-// ===== Header with District Picker & Tabs =====
 type TabType = "latest" | "popular";
 
 const Header: React.FC<{
@@ -114,14 +120,21 @@ const Header: React.FC<{
         onPress={onOpenPicker}
         style={{ flexDirection: "row", alignItems: "center" }}
       >
-        <Text style={{ fontSize: 20, fontWeight: "800", marginRight: 4 }}>
+        {/* ✅ 연수구: Pretendard-Semibold, fs 22 */}
+        <Text
+          style={{
+            fontFamily: "Pretendard-SemiBold",
+            fontSize: 22,
+            marginRight: 4,
+          }}
+        >
           {district}
         </Text>
         <Feather name="chevron-down" size={18} color={COLOR.sub} />
       </Pressable>
       <View style={{ flexDirection: "row", columnGap: 16 }}>
         <Image
-          source={require("../../assets/images/search.png")} // 로컬 이미지일 경우
+          source={require("../../assets/images/search.png")}
           style={{ width: 22, height: 22 }}
         />
         <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
@@ -139,10 +152,11 @@ const Header: React.FC<{
         style={{ flex: 1, alignItems: "center" }}
         onPress={() => onChangeTab("latest")}
       >
+        {/* ✅ 최신글: Pretendard-Semibold, fs 18 */}
         <Text
           style={{
-            fontSize: 15,
-            fontWeight: "700",
+            fontFamily: "Pretendard-SemiBold",
+            fontSize: 18,
             color: activeTab === "latest" ? COLOR.primary : COLOR.sub,
           }}
         >
@@ -164,10 +178,11 @@ const Header: React.FC<{
         style={{ flex: 1, alignItems: "center" }}
         onPress={() => onChangeTab("popular")}
       >
+        {/* ✅ 인기글: Pretendard-Semibold, fs 18 */}
         <Text
           style={{
-            fontSize: 15,
-            fontWeight: "700",
+            fontFamily: "Pretendard-SemiBold",
+            fontSize: 18,
             color: activeTab === "popular" ? COLOR.primary : COLOR.sub,
           }}
         >
@@ -253,10 +268,11 @@ const PollBarThin: React.FC<{
   active?: boolean;
   onPress?: () => void;
 }> = ({ label, percent, active, onPress }) => {
+  const RIGHT_R = 10;
+  const LEFT_R = percent >= 99.9 ? 10 : 0;
   return (
     <Pressable onPress={onPress} style={{ marginBottom: 12 }}>
       <View style={{ position: "relative" }}>
-        {/* track (thicker: 50px) */}
         <View
           style={{
             height: POLL_THIN_H,
@@ -265,16 +281,18 @@ const PollBarThin: React.FC<{
             overflow: "hidden",
           }}
         >
-          {/* fill */}
           <View
             style={{
               width: `${percent}%`,
               height: "100%",
               backgroundColor: active ? COLOR.primary : "#C7C7CC",
+              borderTopRightRadius: RIGHT_R,
+              borderBottomRightRadius: RIGHT_R,
+              borderTopLeftRadius: LEFT_R,
+              borderBottomLeftRadius: LEFT_R,
             }}
           />
         </View>
-        {/* overlay labels (left: label, right: percent) */}
         <View
           pointerEvents="none"
           style={{
@@ -288,23 +306,11 @@ const PollBarThin: React.FC<{
             justifyContent: "space-between",
           }}
         >
-          <Text
-            style={{
-              fontSize: 16,
-              // 폰트가 없으면 family는 제거해도 됩니다.
-              // fontFamily: "Pretendard-Medium",
-              color: active ? "#ffffff" : "#5C5C5C",
-            }}
-          >
+          {/* ✅ 바닐라/말차 fs 16 */}
+          <Text style={{ fontSize: 16, color: active ? "#ffffff" : "#5C5C5C" }}>
             {label}
           </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              // fontFamily: "Pretendard-Medium",
-              color: active ? "#000000" : "#5C5C5C",
-            }}
-          >
+          <Text style={{ fontSize: 14, color: active ? "#000000" : "#5C5C5C" }}>
             {percent.toFixed(1)} %
           </Text>
         </View>
@@ -326,7 +332,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
   const p = (id: "vanilla" | "matcha") =>
     (opts.find((o) => o.id === id)!.votes / total) * 100;
 
-  // 투표: 같은 항목을 한 번 더 누르면 취소 (표 -1, 선택 해제)
   const vote = (id: "vanilla" | "matcha") => {
     if (choice === id) {
       setOpts((prev) => {
@@ -338,8 +343,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
       setChoice(null);
       return;
     }
-
-    // 다른 항목으로 변경: 이전 선택 -1 후 새 항목 +1
     setOpts((prev) => {
       const next = prev.map((o) => ({ ...o }));
       if (choice) {
@@ -354,17 +357,8 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: COLOR.card,
-        marginHorizontal: 12,
-        marginTop: 12,
-        borderRadius: 14,
-        paddingBottom: 8,
-        borderWidth: 1,
-        borderColor: COLOR.border,
-      }}
-    >
+    // 외곽 박스 제거 상태 유지
+    <View style={{ marginTop: 12, marginHorizontal: 12 }}>
       {/* 프로필 */}
       <Pressable
         onPress={() => router.push("/(myPageTabs)/profile")}
@@ -375,7 +369,10 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
           style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
         />
         <View style={{ flex: 1 }}>
-          <Text style={{ fontWeight: "700" }}>{item.profile.name}</Text>
+          {/* ✅ 소문난 카페 fs 16 */}
+          <Text style={{ fontWeight: "700", fontSize: 16 }}>
+            {item.profile.name}
+          </Text>
           <Text style={{ color: COLOR.sub, fontSize: 12 }}>
             {item.profile.district} · {item.profile.location}
           </Text>
@@ -389,7 +386,7 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         {item.content.text}
       </Text>
 
-      {/* Poll — only thin bars (tap to vote) */}
+      {/* Poll */}
       <View style={{ paddingHorizontal: 12 }}>
         <PollBarThin
           label="바닐라 라떼"
@@ -469,40 +466,23 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
 
       {/* caption */}
       <View style={{ paddingHorizontal: 12, marginTop: 8 }}>
-        <Text style={{ color: COLOR.sub, fontSize: 12 }}>
-          <Text style={{ color: COLOR.text, fontWeight: "600" }}>
+        {/* ✅ username/caption 동일 크기 13, username 뒤 살짝 띄움 */}
+        <Text style={{ color: COLOR.sub, fontSize: 13 }}>
+          <Text style={{ color: COLOR.text, fontWeight: "600", fontSize: 13 }}>
             {item.author}
-          </Text>{" "}
+          </Text>
+          {"  "}
           {item.caption}
         </Text>
       </View>
 
-      {/* hashtags */}
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 6,
-          paddingHorizontal: 12,
-          marginTop: 10,
-          marginBottom: 6,
-        }}
-      >
-        {item.hashtags.map((t) => (
-          <View
-            key={t}
-            style={{
-              borderRadius: 8,
-              paddingHorizontal: 8,
-              paddingVertical: 5,
-              backgroundColor: COLOR.chip,
-              borderWidth: 1,
-              borderColor: COLOR.border,
-            }}
-          >
-            <Text style={{ fontSize: 12, color: COLOR.primary }}># {t}</Text>
-          </View>
-        ))}
+      {/* ✅ hashtags: 동일 크기 13 (줄글) */}
+      <View style={{ paddingHorizontal: 12, marginTop: 10, marginBottom: 6 }}>
+        <Text style={{ fontSize: 13, color: COLOR.primary }}>
+          {item.hashtags
+            .map((t, i) => `# ${t}${i < item.hashtags.length - 1 ? " " : ""}`)
+            .join("")}
+        </Text>
       </View>
     </View>
   );
@@ -514,7 +494,6 @@ const CommunityScreen: React.FC = () => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [tab, setTab] = useState<TabType>("latest");
 
-  // 🔸 탭에 따라 데이터 선택 (최소 변경)
   const data = useMemo(() => (tab === "latest" ? FEED : FEED_POPULAR), [tab]);
 
   const ListHeader = useMemo(
