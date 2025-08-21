@@ -143,23 +143,15 @@ export default function profile() {
           </View>
         </View>
 
-        {/* 버튼 2개 — 화면 좌우 꽉 채움 */}
+        {/* ✅ 버튼 영역: 두 개 → 한 개(주황, 풀폭) */}
         <View style={styles.btnRow}>
           <Pressable
             style={({ pressed }) => [
-              styles.actionBtn,
-              pressed && { opacity: 0.7 },
+              styles.followBtn,
+              pressed && { opacity: 0.85 },
             ]}
           >
-            <Text style={styles.actionBtnText}>프로필 편집</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.actionBtn,
-              pressed && { opacity: 0.7 },
-            ]}
-          >
-            <Text style={styles.actionBtnText}>프로필 공유</Text>
+            <Text style={styles.followText}>팔로우</Text>
           </Pressable>
         </View>
       </View>
@@ -233,7 +225,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontFamily: "Pretendard-Semibold",
+    fontFamily: "Pretendard-SemiBold",
     letterSpacing: -0.3,
   },
 
@@ -255,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  nickname: { fontSize: 22, fontFamily: "Pretendard-Semibold" },
+  nickname: { fontSize: 22, fontFamily: "Pretendard-Semiold" },
   badge: {
     backgroundColor: BADGE_BG,
     paddingHorizontal: 8,
@@ -278,7 +270,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 13,
     color: "#999",
-    fontFamily: "Pretendard-Semibold",
+    fontFamily: "Pretendard-Semiold",
   },
 
   // ✅ Stats — 좌우로 더 넓게
@@ -318,18 +310,19 @@ const styles = StyleSheet.create({
     gap: 12,
     marginHorizontal: -SIDE,
   },
-  actionBtn: {
+  // 🔶 새로 추가: 팔로우 단일 버튼 스타일
+  followBtn: {
     flex: 1,
-    backgroundColor: BTN_BG,
+    backgroundColor: BADGE_BG,
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
-  actionBtnText: {
+  followText: {
     fontSize: 14,
-    color: "#333",
-    fontFamily: "Pretendard-Medium",
+    color: "#fff",
+    fontFamily: "Pretendard-SemiBold",
   },
 
   // Grid

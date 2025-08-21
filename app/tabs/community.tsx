@@ -1,7 +1,6 @@
 // community.tsx
 import React, { useMemo, useState } from "react";
-import { useRouter } from "expo-router";
-import { router } from "expo-router";
+import { useRouter, router } from "expo-router";
 import {
   View,
   Text,
@@ -11,6 +10,7 @@ import {
   SafeAreaView,
   Platform,
   Modal,
+  StatusBar,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 
@@ -101,11 +101,10 @@ const Header: React.FC<{
 }> = ({ district, onOpenPicker, activeTab, onChangeTab }) => (
   <View
     style={{
+      // ⬅️ 헤더에 보더 두지 않음(알림 아이콘 잘림 방지)
       paddingHorizontal: 16,
       paddingTop: 8,
       paddingBottom: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: COLOR.border,
       backgroundColor: COLOR.bg,
     }}
   >
@@ -138,9 +137,15 @@ const Header: React.FC<{
           style={{ width: 22, height: 22 }}
         />
         <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
+          {/* ✅ 종 아이콘 상단 클리핑 방지 */}
           <Image
             source={require("../../assets/images/notice.png")}
-            style={{ width: 22, height: 22 }}
+            style={{
+              width: 22,
+              height: 22,
+              marginTop: 2,
+              resizeMode: "contain",
+            }}
           />
         </Pressable>
       </View>
@@ -152,7 +157,6 @@ const Header: React.FC<{
         style={{ flex: 1, alignItems: "center" }}
         onPress={() => onChangeTab("latest")}
       >
-        {/* ✅ 최신글: Pretendard-Semibold, fs 18 */}
         <Text
           style={{
             fontFamily: "Pretendard-SemiBold",
@@ -162,23 +166,12 @@ const Header: React.FC<{
         >
           최신글
         </Text>
-        <View
-          style={{
-            height: 2,
-            backgroundColor:
-              activeTab === "latest" ? COLOR.primary : "transparent",
-            marginTop: 6,
-            borderRadius: 1,
-            alignSelf: "stretch",
-          }}
-        />
       </Pressable>
 
       <Pressable
         style={{ flex: 1, alignItems: "center" }}
         onPress={() => onChangeTab("popular")}
       >
-        {/* ✅ 인기글: Pretendard-Semibold, fs 18 */}
         <Text
           style={{
             fontFamily: "Pretendard-SemiBold",
@@ -188,17 +181,32 @@ const Header: React.FC<{
         >
           인기글
         </Text>
-        <View
-          style={{
-            height: 2,
-            backgroundColor:
-              activeTab === "popular" ? COLOR.primary : "transparent",
-            marginTop: 6,
-            borderRadius: 1,
-            alignSelf: "stretch",
-          }}
-        />
       </Pressable>
+    </View>
+
+    {/* ✅ 탭 아래 전용: 회색 라인 + (한쪽만) 주황 라인 — 스크린 끝까지 */}
+    <View
+      style={{
+        marginTop: 6,
+        height: 1,
+        backgroundColor: COLOR.border, // 회색 얇은 선
+        position: "relative",
+        marginHorizontal: -16, // ← 헤더 패딩 상쇄 → 화면 끝까지
+      }}
+    >
+      <View
+        style={[
+          {
+            position: "absolute",
+            top: -1, // 회색선과 겹치게
+            height: 2,
+            backgroundColor: COLOR.primary,
+          },
+          activeTab === "latest"
+            ? { left: 0, right: "50%" } // 좌측 끝 → 가운데
+            : { left: "50%", right: 0 }, // 가운데 → 우측 끝
+        ]}
+      />
     </View>
   </View>
 );
@@ -215,6 +223,7 @@ const DistrictPicker: React.FC<{
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      statusBarTranslucent // 상단 오버레이 끊김 방지
     >
       <Pressable
         style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}
@@ -306,7 +315,6 @@ const PollBarThin: React.FC<{
             justifyContent: "space-between",
           }}
         >
-          {/* ✅ 바닐라/말차 fs 16 */}
           <Text style={{ fontSize: 16, color: active ? "#ffffff" : "#5C5C5C" }}>
             {label}
           </Text>
@@ -321,7 +329,7 @@ const PollBarThin: React.FC<{
 
 // ===== Post Card =====
 const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
-  const router = useRouter();
+  const routerNav = useRouter();
   const [liked, setLiked] = useState(item.stats.liked);
   const [opts, setOpts] = useState(item.content.poll.options);
   const [choice, setChoice] = useState<typeof item.content.poll.myChoice>(
@@ -357,11 +365,9 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
   };
 
   return (
-    // 외곽 박스 제거 상태 유지
     <View style={{ marginTop: 12, marginHorizontal: 12 }}>
-      {/* 프로필 */}
       <Pressable
-        onPress={() => router.push("/(myPageTabs)/profile")}
+        onPress={() => routerNav.push("/(myPageTabs)/profile")}
         style={{ padding: 12, flexDirection: "row", alignItems: "center" }}
       >
         <Image
@@ -369,7 +375,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
           style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
         />
         <View style={{ flex: 1 }}>
-          {/* ✅ 소문난 카페 fs 16 */}
           <Text style={{ fontWeight: "700", fontSize: 16 }}>
             {item.profile.name}
           </Text>
@@ -386,7 +391,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         {item.content.text}
       </Text>
 
-      {/* Poll */}
       <View style={{ paddingHorizontal: 12 }}>
         <PollBarThin
           label="바닐라 라떼"
@@ -402,7 +406,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         />
       </View>
 
-      {/* 사진 */}
       <View
         style={{
           marginTop: 6,
@@ -419,7 +422,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         />
       </View>
 
-      {/* Actions */}
       <View
         style={{
           flexDirection: "row",
@@ -464,9 +466,7 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         </View>
       </View>
 
-      {/* caption */}
       <View style={{ paddingHorizontal: 12, marginTop: 8 }}>
-        {/* ✅ username/caption 동일 크기 13, username 뒤 살짝 띄움 */}
         <Text style={{ color: COLOR.sub, fontSize: 13 }}>
           <Text style={{ color: COLOR.text, fontWeight: "600", fontSize: 13 }}>
             {item.author}
@@ -476,7 +476,6 @@ const PostCard: React.FC<{ item: (typeof FEED)[number] }> = ({ item }) => {
         </Text>
       </View>
 
-      {/* ✅ hashtags: 동일 크기 13 (줄글) */}
       <View style={{ paddingHorizontal: 12, marginTop: 10, marginBottom: 6 }}>
         <Text style={{ fontSize: 13, color: COLOR.primary }}>
           {item.hashtags
@@ -520,6 +519,8 @@ const CommunityScreen: React.FC = () => {
         paddingTop: Platform.OS === "ios" ? 36 : 40,
       }}
     >
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+
       <FlatList
         data={data}
         renderItem={Item}
