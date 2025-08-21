@@ -37,7 +37,7 @@ export default function MapPage() {
   const mapRef = useRef<MapView | null>(null);
   const listRef = useRef<FlatList<Place> | null>(null);
   const [filters, setFilters] = useState<FilterKey[]>([]);
-
+  const [expanded, setExpanded] = useState<
   const [places] = useState<Place[]>([
     {
       id: "1",
@@ -189,7 +189,7 @@ export default function MapPage() {
 
           <FlatList
             ref={listRef}
-            data={filtered}
+            data={expanded ? filtered : filtered.slice(0, 3)}
             keyExtractor={(i) => i.id}
             renderItem={({ item }) => (
               <PlaceCard place={item} onPress={() => focusPlace(item)} />
