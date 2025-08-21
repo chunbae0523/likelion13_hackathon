@@ -6,10 +6,12 @@ import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 가게 관련 실제 비즈니스 로직을 처리하는 서비스 (주방장)
+ */
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -19,12 +21,14 @@ public class StoreService {
     private final UserRepository userRepository;
     private final StoreFollowRepository storeFollowRepository;
 
+    /** 가게 1개 정보 조회 로직 */
     @Transactional(readOnly = true)
     public Store getStoreInfo(Long storeId) {
         return storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("가게를 찾을 수 없습니다."));
     }
 
+    /** 특정 가게에 작성된 모든 게시물 목록 조회 로직 */
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPostsByStore(Long storeId) {
         return postRepository.findAllByStoreId(storeId).stream()
@@ -32,6 +36,7 @@ public class StoreService {
                 .collect(Collectors.toList());
     }
 
+    /** 가게 팔로우 로직 */
     @Transactional
     public void followStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -43,6 +48,7 @@ public class StoreService {
         storeFollowRepository.save(new StoreFollow(user, store));
     }
 
+    /** 가게 팔로우 취소 로직 */
     @Transactional
     public void unfollowStore(Long userId, Long storeId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
