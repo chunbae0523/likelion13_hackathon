@@ -1,27 +1,31 @@
-import React, { useMemo, useRef, useState, useCallback } from "react";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import * as Location from "expo-location";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  StyleSheet,
-  View,
-  FlatList,
-  Text,
-  Image,
   Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MapView, {
-  PROVIDER_GOOGLE,
   Marker,
+  PROVIDER_GOOGLE,
   type Region,
 } from "react-native-maps";
-import MapFilterBar, { FilterKey } from "../../components/MapFilterBar"; //FilterKey 자체 선언 -> MapFilterBar에서 선언한 Key 사용
-import PlaceCard from "../../components/PlaceCard";
-import BottomSheet from "../../components/BottomSheet";
-import { Place } from "../../src/types/Place";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import BottomSheet from "../../components/BottomSheet";
+import MapFilterBar, { FilterKey } from "../../components/MapFilterBar";
+import PlaceCard from "../../components/PlaceCard";
+import { Place } from "../../src/types/Place";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 const { height: H } = Dimensions.get("window");
-
+const TOP_WHITE_H = 70;
+const TOP_MARGIN = 16;
+const MAX_SHEET = Math.round(SCREEN_H * 0.8);
 const DEFAULT: Region = {
   latitude: 37.5665,
   longitude: 126.978,
@@ -30,11 +34,11 @@ const DEFAULT: Region = {
 };
 
 export default function MapPage() {
-  const insets = useSafeAreaInsets(); // 안전 영역 인셋 가져오기
+  const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView | null>(null);
   const listRef = useRef<FlatList<Place> | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterKey[]>([]);
-
   const [places] = useState<Place[]>([
     {
       id: "1",
@@ -105,23 +109,42 @@ export default function MapPage() {
     },
     [filtered]
   );
+  useEffect(() => {
+    if (expanded) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+  }, [expanded]);
+
+  const goToMyLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") return;
+    const loc = await Location.getCurrentPositionAsync({});
+    mapRef.current?.animateCamera(
+      {
+        center: {
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        },
+        zoom: 16,
+      },
+      { duration: 300 }
+    );
+  };
 
   return (
     <View style={[{ paddingTop: insets.top }, s.container]}>
-      {/* 상단 검색 영역 */}
       <View style={s.topWhite}>
         <View style={s.searchBar}>
-          <FontAwesome name="search" size={25} style={s.searchIcon} color="#C2C2C2" />
-          {/* <Image
-            source={require("../../assets/images/search_light.png")}
+          <FontAwesome
+            name="search"
+            size={25}
             style={s.searchIcon}
-          /> */}
-          {/* 이미지 해상도 문제로 FontAwesome 아이콘으로 대체 */}
+            color="#C2C2C2"
+          />
           <Text style={s.searchPh}>현재 지역 소문 검색하기</Text>
         </View>
       </View>
 
-      {/* 지도 + 칩 */}
       <View style={s.mapContainer}>
         <MapView
           ref={mapRef}
@@ -158,19 +181,41 @@ export default function MapPage() {
           />
         </View>
       </View>
-
-      {/* 바텀시트 - 컴포넌트화 */}
+      <TouchableOpacity style={s.gpsBtn} onPress={goToMyLocation}>
+        <Image
+          source={require("@/assets/images/focus.png")}
+          style={{ width: 60, height: 60 }}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <BottomSheet
-        snapPoints={[350, Math.round(SCREEN_H * 0.36), H - 1]}
+        snapPoints={[350, Math.round(SCREEN_H * 0.36), MAX_SHEET]}
         initialSnap={0}
       >
         <View style={{ paddingBottom: 220 }}>
-          <Text style={s.title}>안녕하세요! user123님</Text>
-          <Text style={s.subTitle}>현재 위치에서 가장 소문난 카페입니다!</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "column", flex: 1 }}>
+              <Text style={s.title}>안녕하세요! user123님</Text>
+              <Text style={s.subTitle}>
+                현재 위치에서 가장 소문난 카페입니다!
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                console.log("새로고침!");
+              }}
+            >
+              <Image
+                source={require("@/assets/images/map_reload.png")}
+                style={{ width: 27, height: 27 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
 
           <FlatList
             ref={listRef}
-            data={filtered}
+            data={expanded ? filtered : filtered.slice(0, 3)}
             keyExtractor={(i) => i.id}
             renderItem={({ item }) => (
               <PlaceCard place={item} onPress={() => focusPlace(item)} />
@@ -183,6 +228,18 @@ export default function MapPage() {
               index: i,
             })}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              filtered.length > 3 ? (
+                <TouchableOpacity
+                  style={s.moreBtn}
+                  onPress={() => setExpanded((v) => !v)}
+                >
+                  <Text style={s.moreText}>
+                    {expanded ? "접기 ∧" : "펼쳐서 더보기 ∨"}
+                  </Text>
+                </TouchableOpacity>
+              ) : null
+            }
           />
         </View>
       </BottomSheet>
@@ -226,6 +283,28 @@ const s = StyleSheet.create({
     paddingBottom: 30,
     color: "#9C9C9C",
   },
+  moreBtn: {
+    marginTop: 12,
+    marginBottom: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    borderRadius: 10,
+    paddingVertical: 12,
+  },
+  moreText: {
+    fontSize: 14,
+    color: "#333",
+  },
 
   itemDivider: { height: 2, backgroundColor: "#F0F0F0", marginVertical: 10 },
+
+  gpsBtn: {
+    position: "absolute",
+    bottom: 350,
+    right: 16,
+    backgroundColor: "transparant",
+    borderRadius: 50,
+  },
 });
