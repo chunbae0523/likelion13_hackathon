@@ -1,7 +1,7 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions } from "react-native";
 
-const screenWidth = Dimensions.get('window').width;
-const screenHeight = Dimensions.get('window').height;
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 export default StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#ffffffff" },
@@ -38,7 +38,6 @@ export default StyleSheet.create({
   textInput: {
     fontFamily: "Pretendard-Medium",
     fontSize: 18,
-
   },
 
   scrollContainer: {
@@ -93,13 +92,13 @@ export default StyleSheet.create({
   badgeText: {
     fontFamily: "Pretendard-Medium",
     fontSize: 14,
-    color: "#9C9C9C"
+    color: "#9C9C9C",
   },
 
   selectedBadgeText: {
     fontFamily: "Pretendard-Medium",
     fontSize: 14,
-    color: "#FFFFFF"
+    color: "#FFFFFF",
   },
 
   seperateLine: {
@@ -168,5 +167,5 @@ export default StyleSheet.create({
     textAlign: "center",
     fontSize: 18,
     fontFamily: "Pretendard-SemiBold",
-  }
+  },
 });

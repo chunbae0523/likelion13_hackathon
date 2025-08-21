@@ -7,8 +7,8 @@ export default StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#ffffffff" },
 
   header: {
+    display: "flex",
     paddingHorizontal: 12,
-    paddingBottom: 24, // 제목-그리드 여백
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -16,16 +16,31 @@ export default StyleSheet.create({
   backBtn: {
     width: 39,
     height: 37,
-    justifyContent: "center",
-    alignItems: "center",
     marginRight: 6,
     position: "absolute", // 위치를 절대적으로 설정
     left: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
-    textAlign: "center",
     fontSize: 20,
     fontFamily: "Pretendard-SemiBold",
-    marginTop: 10,
+  },
+
+  descriptionContainer: {
+    marginTop: 100,
+    alignItems: "center",
+  },
+
+  descriptionText: {
+    fontSize: 22,
+    lineHeight: 24,
+    textAlign: "center",
+    marginTop: 13,
+    fontFamily: "Pretendard-SemiBold",
+  },
+
+  inputContainer: {
+    marginHorizontal: 17,
   },
 });
