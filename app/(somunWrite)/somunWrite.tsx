@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Pressable,
+  TouchableOpacity,
   TextInput,
   ScrollView,
-  Button,
 } from "react-native";
-import { useNavigation, Link } from "expo-router";
+import { useNavigation, Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styles/somunWrite_styles"; // Import styles
 
@@ -93,9 +92,9 @@ export default function somunWrite() {
       {/* 상단 커스텀 헤더 */}
       <View style={[styles.header, { paddingTop: 8 }]}>
         <Link href="../" asChild>
-          <Pressable hitSlop={10} style={styles.backBtn}>
+          <TouchableOpacity hitSlop={10} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
-          </Pressable>
+          </TouchableOpacity>
         </Link>
         <Text style={styles.title}>소문쓰기</Text>
       </View>
@@ -130,18 +129,25 @@ export default function somunWrite() {
                   value={badge.label}
                   onChangeText={(text) => onChangeText(text, badge.id)}
                 />
-                <Pressable onPress={() => removeBadge(badge.id)}>
+                <TouchableOpacity onPress={() => removeBadge(badge.id)}>
                   <FontAwesome6 name="trash-can" size={16} color="#FFFFFF" />
-                </Pressable>
+                </TouchableOpacity>
               </View>
             ) : (
-              <Pressable
+              <TouchableOpacity
                 key={badge.id}
                 style={[styles.badge, badge.selected && styles.selectedBadge]}
                 onPress={() => onBadgePress(badge)}
               >
-                <Text style={[styles.badgeText, badge.selected && styles.selectedBadgeText]}>{badge.label}</Text>
-              </Pressable>
+                <Text
+                  style={[
+                    styles.badgeText,
+                    badge.selected && styles.selectedBadgeText,
+                  ]}
+                >
+                  {badge.label}
+                </Text>
+              </TouchableOpacity>
             )
           )}
         </View>
@@ -152,35 +158,41 @@ export default function somunWrite() {
 
       {/* 하단 버튼 영역 */}
       <View style={styles.buttonsContainer}>
-        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+        <TouchableOpacity
+          activeOpacity={0.6}
+          style={styles.buttonContainer}
+          onPress={() => {
+            router.push("/(somunWrite)/createAIpost");
+          }}
+        >
           <AIIcon width={ICONSIZE + 2} height={ICONSIZE + 2} />
           <Text style={styles.buttonText}>AI 홍보물 생성</Text>
           <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </Pressable>
+        </TouchableOpacity>
 
-        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
           <ImageIcon width={ICONSIZE} height={ICONSIZE} />
           <Text style={styles.buttonText}>사진 추가</Text>
           <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </Pressable>
+        </TouchableOpacity>
 
-        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
           <VideoIcon width={ICONSIZE} height={ICONSIZE} />
           <Text style={styles.buttonText}>동영상 추가</Text>
           <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </Pressable>
+        </TouchableOpacity>
 
-        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
           <SmileIcon width={ICONSIZE - 2} height={ICONSIZE - 2} />
           <Text style={styles.buttonText}>사람 태그</Text>
           <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </Pressable>
+        </TouchableOpacity>
 
-        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
           <MapPinIcon width={ICONSIZE - 3} height={ICONSIZE - 3} />
           <Text style={styles.buttonText}>위치 추가</Text>
           <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </Pressable>
+        </TouchableOpacity>
         <View style={styles.locationChipContainer}>
           <Text style={styles.locationChipText}>인천광역시</Text>
           <Text style={styles.locationChipText}>연수구 용담로 135</Text>
@@ -190,9 +202,9 @@ export default function somunWrite() {
 
       {/* 게시하기 버튼 */}
       <View style={styles.postContainer}>
-        <Pressable onPress={() => {}}>
+        <TouchableOpacity onPress={() => {}}>
           <Text style={styles.postText}>게시하기</Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

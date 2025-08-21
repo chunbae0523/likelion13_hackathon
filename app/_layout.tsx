@@ -1,8 +1,7 @@
 import { useFonts } from "expo-font";
-import { Stack, router } from "expo-router";
+import { Stack, router, useSegments } from "expo-router";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { usePathname } from "expo-router"; // 경로 불러와주는 모듈
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -17,10 +16,9 @@ export default function RootLayout() {
     "Pretendard-ExtraLight": require("../assets/fonts/Pretendard-ExtraLight.ttf"),
   });
 
-    // 글쓰기 버튼을 나타낼 경로
-  const pathname = usePathname();
-  const showRoutes = ["/tabs"];
-  const showButton = showRoutes.some((route) => pathname.startsWith(route));
+  const segments = useSegments(); // 글쓰기 버튼을 나타낼 경로
+  const currentSegment = segments.length > 0 ? segments[0] : "defaultRoute"; // 글쓰기 버튼을 보여줄 경로 배열
+  const showWriteButton = ["defaultRoute", "tabs"].includes(currentSegment); // 글쓰기 버튼을 보여줄 경로 배열
 
   if (!fontsLoaded) {
     return null;
@@ -32,7 +30,7 @@ export default function RootLayout() {
         <Stack.Screen name="tabs" options={{ headerShown: false }} />
       </Stack>
 
-      {showButton && (
+      {showWriteButton && (
         <TouchableOpacity
           style={styles.fab}
           onPress={() => {

@@ -11,7 +11,7 @@ export default StyleSheet.create({
     marginBottom: 16,
   },
   title: { fontSize: 20, fontFamily: "Pretendard-SemiBold" },
-  headerIcons: { flexDirection: "row" , gap: 20},
+  headerIcons: { flexDirection: "row", gap: 20 },
   headerIcon: { marginRight: 16 },
 
   profileCard: {
@@ -32,14 +32,23 @@ export default StyleSheet.create({
     backgroundColor: "#FFD3A3",
   },
   nickname: { fontSize: 20, fontFamily: "Pretendard-SemiBold" },
-  username: { color: "#888", marginTop: 2, fontFamily: "Pretendard-Medium", fontSize: 12 },
+  username: {
+    color: "#888",
+    marginTop: 2,
+    fontFamily: "Pretendard-Medium",
+    fontSize: 12,
+  },
   profileBtn: {
     backgroundColor: "#F36B3B",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 10,
   },
-  profileBtnText: { color: "#fff", fontSize: 12, fontFamily: "Pretendard-SemiBold" },
+  profileBtnText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "Pretendard-SemiBold",
+  },
 
   statCard: {
     flexDirection: "row",
@@ -58,13 +67,17 @@ export default StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: { color: "#fff", fontSize: 12 },
-  divider: { width: 1, backgroundColor: "rgba(255,255,255,0.4)", fontFamily: "Pretendard-SemiBold" },
+  divider: {
+    width: 1,
+    backgroundColor: "rgba(255,255,255,0.4)",
+    fontFamily: "Pretendard-SemiBold",
+  },
 
   sectionTitle: {
     fontSize: 14,
     fontFamily: "Pretendard-SemiBold",
     marginTop: 12,
-    marginBottom: 10, 
+    marginBottom: 10,
   },
 
   // 일반 카드(관심/활동)
@@ -96,7 +109,12 @@ export default StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  rowText: { fontSize: 16, marginLeft: 12, lineHeight: 22, fontFamily: "Pretendard-SemiBold" },
+  rowText: {
+    fontSize: 16,
+    marginLeft: 12,
+    lineHeight: 22,
+    fontFamily: "Pretendard-SemiBold",
+  },
   separator: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: "#eee",
