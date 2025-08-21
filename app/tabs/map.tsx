@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -36,8 +36,8 @@ export default function MapPage() {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView | null>(null);
   const listRef = useRef<FlatList<Place> | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterKey[]>([]);
-  const [expanded, setExpanded] = useState<
   const [places] = useState<Place[]>([
     {
       id: "1",
@@ -108,6 +108,11 @@ export default function MapPage() {
     },
     [filtered]
   );
+  useEffect(() => {
+    if (expanded) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+  }, [expanded]);
 
   return (
     <View style={[{ paddingTop: insets.top }, s.container]}>
@@ -202,6 +207,18 @@ export default function MapPage() {
               index: i,
             })}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              filtered.length > 3 ? (
+                <TouchableOpacity
+                  style={s.moreBtn}
+                  onPress={() => setExpanded((v) => !v)}
+                >
+                  <Text style={s.moreText}>
+                    {expanded ? "접기 ∧" : "펼쳐서 더보기 ∨"}
+                  </Text>
+                </TouchableOpacity>
+              ) : null
+            }
           />
         </View>
       </BottomSheet>
@@ -244,6 +261,20 @@ const s = StyleSheet.create({
     paddingTop: 3,
     paddingBottom: 30,
     color: "#9C9C9C",
+  },
+  moreBtn: {
+    marginTop: 12,
+    marginBottom: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    borderRadius: 10,
+    paddingVertical: 12,
+  },
+  moreText: {
+    fontSize: 14,
+    color: "#333",
   },
 
   itemDivider: { height: 2, backgroundColor: "#F0F0F0", marginVertical: 10 },
