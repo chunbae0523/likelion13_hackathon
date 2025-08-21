@@ -61,7 +61,7 @@ export default function LikesScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { paddingTop: insets.top + 12 }]}>
       <StatusBar barStyle="dark-content" />
 
       {/* 상단 커스텀 헤더 */}
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: "center",
     fontSize: 20,
-    fontWeight: "700",
+    fontFamily: "Pretendard-Semibold",
     letterSpacing: -0.3,
   },
 
