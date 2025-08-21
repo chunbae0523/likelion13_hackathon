@@ -1,7 +1,8 @@
 import { useFonts } from "expo-font";
-import { Stack, Slot } from "expo-router";
+import { Stack, router } from "expo-router";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import Feather from '@expo/vector-icons/Feather';
+import Feather from "@expo/vector-icons/Feather";
+import { usePathname } from "expo-router"; // 경로 불러와주는 모듈
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -16,6 +17,11 @@ export default function RootLayout() {
     "Pretendard-ExtraLight": require("../assets/fonts/Pretendard-ExtraLight.ttf"),
   });
 
+    // 글쓰기 버튼을 숨길 경로
+  const pathname = usePathname();
+  const hiddenRoutes = ["/somunWrite"];
+  const hideButton = hiddenRoutes.some((route) => pathname.startsWith(route));
+
   if (!fontsLoaded) {
     return null;
   }
@@ -25,14 +31,18 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="tabs" options={{ headerShown: false }} />
       </Stack>
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => {
-          // 버튼 누를 때 동작
-        }}
-      >
-        <Feather name="feather" size={24} color="white" />
-      </TouchableOpacity>
+
+      {!hideButton && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => {
+            // 버튼 누를 때 동작
+            router.push("/(somunWrite)/somunWrite");
+          }}
+        >
+          <Feather name="feather" size={24} color="white" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -40,18 +50,18 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    right: 24,
-    bottom: 40,
-    backgroundColor: "#007AFF",
+    right: 18,
+    bottom: 106,
+    backgroundColor: "#EA6844",
     borderRadius: 32,
     width: 55,
     height: 55,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 5, // 안드로이드 그림자
-    shadowColor: "#000", // iOS 그림자
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    // elevation: 3, // 안드로이드 그림자
+    // shadowColor: "#000", // iOS 그림자
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 4,
   },
 });

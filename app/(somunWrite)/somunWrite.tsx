@@ -1,0 +1,199 @@
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ScrollView,
+  Button,
+} from "react-native";
+import { useNavigation, Link } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import styles from "../styles/somunWrite_styles"; // Import styles
+
+//icon Imports
+import { Ionicons } from "@expo/vector-icons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+
+//svg Imports
+import LeftArrowDark from "../../assets/images/left_arrow_dark.svg";
+import AIIcon from "../../assets/images/AI.svg";
+import ImageIcon from "../../assets/images/image.svg";
+import VideoIcon from "../../assets/images/video.svg";
+import SmileIcon from "../../assets/images/smile.svg";
+import MapPinIcon from "../../assets/images/map_pin.svg";
+
+const ICONSIZE = 27; // AI홍보물 생성 등의 기본 아이콘 크기
+
+export default function somunWrite() {
+  const navigation = useNavigation();
+
+  // 상단 기본 헤더 숨김
+  useEffect(() => {
+    navigation.setOptions?.({ headerShown: false });
+  }, [navigation]);
+
+  const [text, setText] = useState(""); // 소문쓰기 적는 텍스트
+  // 뱃지 리스트, 리스트에 추가하는 함수
+  const [badges, setBadges] = useState<BadgeType[]>([
+    { id: "badge1", label: "이벤트" },
+    { id: "badge2", label: "홍보" },
+    { id: "badge3", label: "세일" },
+    { id: "badge4", label: "추천" },
+    { id: "badge5", label: "투표" },
+    { id: "add", label: "+추가", isAddButton: true }, // 뱃지 추가 버튼
+  ]);
+
+  type BadgeType = {
+    id: string;
+    label: string;
+    isAddButton?: boolean;
+    selected?: boolean; // 선택 여부
+    isNew?: boolean; // 새로 추가된 뱃지 여부
+  }; // 뱃지 타입 선언
+
+  // 뱃지 제거 함수
+  const removeBadge = (id: string) => {
+    setBadges((prev) => prev.filter((badge) => badge.id !== id));
+  };
+
+  // 뱃지 클릭 시 동작
+  const onBadgePress = (badge: BadgeType) => {
+    if (badge.isAddButton) {
+      // 뱃지 추가 버튼 클릭 시 빈 뱃지 추가
+      const newBadge = {
+        id: `badge-${Date.now()}`, // 고유 ID 생성
+        label: "",
+        isNew: true,
+      };
+      setBadges((prev) => {
+        const lastIndex = prev.length - 1;
+        const beforeLast = prev.slice(0, lastIndex); // 마지막 뱃지 제외
+        const last = prev[lastIndex]; // 마지막 뱃지
+        return [...beforeLast, newBadge, last]; // 추가버튼 앞에 뱃지 생성
+      });
+    } else {
+      setBadges((prev) =>
+        prev.map((b) =>
+          b.id === badge.id ? { ...b, selected: !b.selected } : b
+        )
+      );
+    }
+  };
+
+  // 뱃지 텍스트 변경 함수
+  const onChangeText = (text: string, id: string) => {
+    setBadges((prev) =>
+      prev.map((badge) => (badge.id === id ? { ...badge, label: text } : badge))
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      {/* 상단 커스텀 헤더 */}
+      <View style={[styles.header, { paddingTop: 8 }]}>
+        <Link href="../" asChild>
+          <Pressable hitSlop={10} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
+          </Pressable>
+        </Link>
+        <Text style={styles.title}>소문쓰기</Text>
+      </View>
+
+      {/* 텍스트 입력 영역 */}
+      <View style={styles.textContainer}>
+        <TextInput
+          style={styles.textInput}
+          placeholder="이웃과 나누고 싶은 이야기를 적어 보세요..."
+          placeholderTextColor={"#9C9C9C"}
+          multiline={true} // 여러줄 입력 가능
+          textAlignVertical="top" // 텍스트 입력 위치를 상단으로
+          value={text}
+          onChangeText={setText}
+        />
+      </View>
+
+      {/* 카테고리 뱃지 */}
+      <ScrollView
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollContainer}
+      >
+        <View style={styles.badgeContainer}>
+          {badges.map((badge) =>
+            badge.isNew ? (
+              <View key={badge.id} style={styles.newBadge}>
+                <TextInput
+                  style={styles.newBadgeText}
+                  placeholder="(눌러서 수정)"
+                  placeholderTextColor={"#FFFFFF"}
+                  value={badge.label}
+                  onChangeText={(text) => onChangeText(text, badge.id)}
+                />
+                <Pressable onPress={() => removeBadge(badge.id)}>
+                  <FontAwesome6 name="trash-can" size={16} color="#FFFFFF" />
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                key={badge.id}
+                style={[styles.badge, badge.selected && styles.selectedBadge]}
+                onPress={() => onBadgePress(badge)}
+              >
+                <Text style={[styles.badgeText, badge.selected && styles.selectedBadgeText]}>{badge.label}</Text>
+              </Pressable>
+            )
+          )}
+        </View>
+      </ScrollView>
+
+      {/* 하단 분리 줄 */}
+      <View style={styles.seperateLine} />
+
+      {/* 하단 버튼 영역 */}
+      <View style={styles.buttonsContainer}>
+        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+          <AIIcon width={ICONSIZE + 2} height={ICONSIZE + 2} />
+          <Text style={styles.buttonText}>AI 홍보물 생성</Text>
+          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+        </Pressable>
+
+        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+          <ImageIcon width={ICONSIZE} height={ICONSIZE} />
+          <Text style={styles.buttonText}>사진 추가</Text>
+          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+        </Pressable>
+
+        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+          <VideoIcon width={ICONSIZE} height={ICONSIZE} />
+          <Text style={styles.buttonText}>동영상 추가</Text>
+          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+        </Pressable>
+
+        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+          <SmileIcon width={ICONSIZE - 2} height={ICONSIZE - 2} />
+          <Text style={styles.buttonText}>사람 태그</Text>
+          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+        </Pressable>
+
+        <Pressable style={styles.buttonContainer} onPress={() => {}}>
+          <MapPinIcon width={ICONSIZE - 3} height={ICONSIZE - 3} />
+          <Text style={styles.buttonText}>위치 추가</Text>
+          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+        </Pressable>
+        <View style={styles.locationChipContainer}>
+          <Text style={styles.locationChipText}>인천광역시</Text>
+          <Text style={styles.locationChipText}>연수구 용담로 135</Text>
+          <Text style={styles.locationChipText}>소문난 카페</Text>
+        </View>
+      </View>
+
+      {/* 게시하기 버튼 */}
+      <View style={styles.postContainer}>
+        <Pressable onPress={() => {}}>
+          <Text style={styles.postText}>게시하기</Text>
+        </Pressable>
+      </View>
+    </SafeAreaView>
+  );
+}

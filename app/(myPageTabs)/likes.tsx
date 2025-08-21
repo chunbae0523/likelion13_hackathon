@@ -9,11 +9,9 @@ import {
   StyleSheet,
   Pressable,
   Dimensions,
-  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useNavigation } from "expo-router";
-import type { Href } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
@@ -50,7 +48,9 @@ export default function LikesScreen() {
 
   // 상단 기본 헤더 숨김
   useEffect(() => {
-    navigation.setOptions?.({ headerShown: false });
+    navigation.setOptions?.({
+      headerShown: false
+    });
   }, [navigation]);
 
   // 스크롤 충분히: 데이터 MULTIPLIER배
@@ -62,7 +62,6 @@ export default function LikesScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
 
       {/* 상단 커스텀 헤더 */}
       <View style={[styles.header, { paddingTop: EXTRA_TOP }]}>
