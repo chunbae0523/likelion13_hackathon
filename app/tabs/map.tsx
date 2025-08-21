@@ -1,4 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import * as Location from "expo-location";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
@@ -16,14 +17,14 @@ import MapView, {
 } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet from "../../components/BottomSheet";
-import MapFilterBar, { FilterKey } from "../../components/MapFilterBar"; //FilterKey 자체 선언 -> MapFilterBar에서 선언한 Key 사용
+import MapFilterBar, { FilterKey } from "../../components/MapFilterBar";
 import PlaceCard from "../../components/PlaceCard";
 import { Place } from "../../src/types/Place";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 const { height: H } = Dimensions.get("window");
-const TOP_WHITE_H = 70; // 상단 검색 영역 대략 높이(패딩 포함)
-const TOP_MARGIN = 16; // 상단 여유 공간
+const TOP_WHITE_H = 70;
+const TOP_MARGIN = 16;
 const MAX_SHEET = Math.round(SCREEN_H * 0.8);
 const DEFAULT: Region = {
   latitude: 37.5665,
@@ -114,9 +115,24 @@ export default function MapPage() {
     }
   }, [expanded]);
 
+  const goToMyLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") return;
+    const loc = await Location.getCurrentPositionAsync({});
+    mapRef.current?.animateCamera(
+      {
+        center: {
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        },
+        zoom: 16,
+      },
+      { duration: 300 }
+    );
+  };
+
   return (
     <View style={[{ paddingTop: insets.top }, s.container]}>
-      {/* 상단 검색 영역 */}
       <View style={s.topWhite}>
         <View style={s.searchBar}>
           <FontAwesome
@@ -165,7 +181,13 @@ export default function MapPage() {
           />
         </View>
       </View>
-
+      <TouchableOpacity style={s.gpsBtn} onPress={goToMyLocation}>
+        <Image
+          source={require("@/assets/images/focus.png")}
+          style={{ width: 60, height: 60 }}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <BottomSheet
         snapPoints={[350, Math.round(SCREEN_H * 0.36), MAX_SHEET]}
         initialSnap={0}
@@ -180,7 +202,6 @@ export default function MapPage() {
             </View>
             <TouchableOpacity
               onPress={() => {
-                // Todo: API 재호출 로직 작성 예정... (새로고침 구현)
                 console.log("새로고침!");
               }}
             >
@@ -278,4 +299,13 @@ const s = StyleSheet.create({
   },
 
   itemDivider: { height: 2, backgroundColor: "#F0F0F0", marginVertical: 10 },
+
+  gpsBtn: {
+    position: "absolute",
+    bottom: 350,
+    right: 16,
+    backgroundColor: "transparant",
+    borderRadius: 50,
+    zIndex: 1000,
+  },
 });
