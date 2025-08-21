@@ -15,6 +15,9 @@ import TitleIcon from "../../assets/images/title.svg";
 import ImageUploadIcon from "../../assets/images/image_upload.svg";
 import { Ionicons } from "@expo/vector-icons";
 
+// Import API
+import { createPromotionImage } from "../../src/api/aiPromotionApi";
+
 export default function createAIposts() {
   // 상단 기본 헤더 숨김
   const navigation = useNavigation();
@@ -26,11 +29,27 @@ export default function createAIposts() {
 
   // 입력값 상태 관리
   const [text, setText] = React.useState("");
-  const maxLength = 200; // 최대 글자 수
+  const maxLength = 2000; // 최대 글자 수
   const onChangeText = (input: string) => {
     if (input.length <= maxLength) {
       setText(input);
     }
+  };
+
+  // 생성하기 버튼 클릭 시 이벤트 -> AIpostAPI 호출
+  const onTextSubmit = (text: String) => {
+    const data = {
+      prompt: text,
+      size: "1024x1024",
+      n: 1,
+    };
+    createPromotionImage(data)
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
@@ -80,7 +99,12 @@ export default function createAIposts() {
       </View>
 
       {/* 생성하기 버튼 */}
-      <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => {
+          onTextSubmit(text);
+        }}
+      >
         <View style={styles.createButtonContainer}>
           <Text style={styles.createButtonText}>생성하기</Text>
         </View>
