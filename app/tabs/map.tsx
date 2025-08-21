@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import MapView, {
@@ -165,8 +166,26 @@ export default function MapPage() {
         initialSnap={0}
       >
         <View style={{ paddingBottom: 220 }}>
-          <Text style={s.title}>안녕하세요! user123님</Text>
-          <Text style={s.subTitle}>현재 위치에서 가장 소문난 카페입니다!</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "column", flex: 1 }}>
+              <Text style={s.title}>안녕하세요! user123님</Text>
+              <Text style={s.subTitle}>
+                현재 위치에서 가장 소문난 카페입니다!
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                // Todo: API 재호출 로직 작성 예정... (새로고침 구현)
+                console.log("새로고침!");
+              }}
+            >
+              <Image
+                source={require("@/assets/images/map_reload.png")}
+                style={{ width: 27, height: 27 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
 
           <FlatList
             ref={listRef}
