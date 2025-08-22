@@ -1,0 +1,51 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.log
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# === OS / 클라우드 동기화 잡파일 ===
+.DS_Store
+Thumbs.db
+*.swp
+/.history/
+/OneDrive*/  # 원드라이브 캐시 폴더들
+
+# === 업로드/첨부 파일 같은 런타임 폴더 ===
+/uploads/
+
+# === 환경설정/비밀키(절대 올리면 안 됨) ===
+# 실제로 쓰는 파일은 src/main/resources/application.properties 라고 가정
+src/main/resources/application.properties
+src/main/resources/application.yml
+.env
+*.secret
