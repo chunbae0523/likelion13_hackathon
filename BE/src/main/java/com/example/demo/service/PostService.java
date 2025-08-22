@@ -1,12 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.PostCreateRequestDto;
+// PostCreateRequestDto import는 이제 필요 없으므로 삭제합니다.
 import com.example.demo.dto.PostDetailResponseDto;
 import com.example.demo.dto.PostResponseDto;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,32 +17,26 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final UserRepository userRepository;
-    private final StoreRepository storeRepository;
+    // StoreRepository는 createPost에서만 사용되었으므로 제거해도 됩니다.
+    // private final StoreRepository storeRepository;
     private final PostLikeRepository postLikeRepository;
     private final PostScrapRepository postScrapRepository;
 
-    // 게시물 생성
-    @Transactional
-    public Post createPost(PostCreateRequestDto requestDto, Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        Store store = (requestDto.getStoreId() != null) ? storeRepository.findById(requestDto.getStoreId()).orElse(null) : null;
-        Post post = new Post(requestDto.getTitle(), requestDto.getContent(), user, store);
-        return postRepository.save(post);
-    }
+    // --- createPost 메소드는 다른 팀원이 구현했으므로 여기서 제거합니다. ---
 
-    // 게시물 목록 조회
+    // ... (getPosts, getPostDetails, likePost, scrapPost 등 나머지 메소드는 그대로 유지) ...
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPosts(String sort, int limit) {
         Sort sortOrder = "new".equals(sort) ? Sort.by(Sort.Direction.DESC, "createdAt") : Sort.by(Sort.Direction.DESC, "likeCount");
-        PageRequest pageable = PageRequest.of(0, limit, sortOrder);
+        Pageable pageable = PageRequest.of(0, limit, sortOrder);
         return postRepository.findAll(pageable).stream()
                 .map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    // 게시물 상세 보기 (조회수 증가 포함)
     @Transactional
     public PostDetailResponseDto getPostDetails(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
@@ -49,7 +44,6 @@ public class PostService {
         return new PostDetailResponseDto(post);
     }
 
-    // 좋아요
     @Transactional
     public void likePost(Long userId, Long postId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -61,7 +55,6 @@ public class PostService {
         post.setLikeCount(post.getLikeCount() + 1);
     }
 
-    // 스크랩
     @Transactional
     public void scrapPost(Long userId, Long postId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
