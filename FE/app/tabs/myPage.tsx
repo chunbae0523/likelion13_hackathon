@@ -38,6 +38,7 @@ const pill = StyleSheet.create({
     fontSize: 14,
     color: "#9C9C9C",
     fontFamily: "Pretendard",
+    fontWeight: 500,
   },
 });
 
@@ -87,15 +88,14 @@ const StatBox = ({ label, value }: { label: string; value: string }) => (
   </View>
 );
 
-/** 일반 행 (아이콘 + 텍스트 + →) */
 const RowItem = ({
-  icon,
   label,
   href,
+  icon,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   href: Href;
+  icon: any;
 }) => {
   const router = useRouter();
   return (
@@ -104,14 +104,18 @@ const RowItem = ({
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
     >
       <View style={styles.rowLeft}>
-        <Ionicons name={icon} size={22} />
-        <Text style={styles.rowText} numberOfLines={1}>
-          {label}
-        </Text>
+        {icon && (
+          <Image
+            source={icon}
+            style={{ width: 20, height: 20, resizeMode: "contain" }}
+          />
+        )}
+        <Text style={styles.rowText}>{label}</Text>
       </View>
-      <View style={styles.rowRight}>
-        <Ionicons name="chevron-forward" size={20} />
-      </View>
+      <Image
+        source={require("../../assets/images/arrow_right.png")}
+        style={{ width: 30, height: 30 }}
+      />
     </Pressable>
   );
 };
@@ -225,40 +229,39 @@ export default function MyPage() {
         <Text style={styles.sectionTitle}>나의 관심</Text>
         <View style={styles.card}>
           <RowItem
-            icon="heart-outline"
+            icon={require("../../assets/images/my_like.png")}
             label="좋아요"
             href="/(myPageTabs)/likes"
           />
-          <View style={styles.separator} />
+
           <RowItem
-            icon="chatbubble-ellipses-outline"
+            icon={require("../../assets/images/my_comment.png")}
             label="댓글"
             href="/(myPageTabs)/comments"
           />
-          <View style={styles.separator} />
           <RowItem
-            icon="bookmark-outline"
+            icon={require("../../assets/images/my_scrap.png")}
             label="스크랩"
             href="/(myPageTabs)/scraps"
           />
         </View>
 
+        <View style={styles.separator} />
         {/* 활동 */}
         <Text style={styles.sectionTitle}>나의 활동</Text>
         <View style={styles.card}>
           <RowItem
-            icon="document-text-outline"
+            icon={require("../../assets/images/my_somun.png")}
             label="내가 작성한 소문"
             href="/myposts"
           />
-          <View style={styles.separator} />
           <RowItem
-            icon="time-outline"
+            icon={require("../../assets/images/my_somun_recent.png")}
             label="최근 본 소문"
             href="/recently-viewed"
           />
         </View>
-
+        <View style={styles.separator} />
         {/* 설정 */}
         <Text style={styles.sectionTitle}>설정</Text>
         <View style={styles.settingsCard}>
