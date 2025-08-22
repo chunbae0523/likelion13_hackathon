@@ -1,0 +1,12 @@
+{
+  "extends": "./node_modules/expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx", // RN/React 17+ 권장
+    "types": ["react", "react-native"],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "FE/.expo/types/**/*.ts", "expo-env.d.ts"]
+}
