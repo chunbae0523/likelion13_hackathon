@@ -33,7 +33,7 @@ public class PostsController {
     private static final List<PostRes> POSTS = new CopyOnWriteArrayList<>();
 
     // GET /api/v1/posts?limit=20&offset=0
-    @GetMapping
+    /* @GetMapping
     public Map<String, Object> list(@RequestParam(defaultValue = "20") int limit,
                                     @RequestParam(defaultValue = "0") int offset) {
         int lim = Math.min(100, Math.max(1, limit));
@@ -42,9 +42,10 @@ public class PostsController {
         List<PostRes> items = POSTS.subList(Math.min(off, POSTS.size()), end);
         return Map.of("total", POSTS.size(), "limit", lim, "offset", off, "items", items);
     }
+    */
 
     // GET /api/v1/posts/{id}
-    @GetMapping("/{id}")
+    /* @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
         return POSTS.stream()
                 .filter(p -> Objects.equals(p.id, id))
@@ -53,6 +54,7 @@ public class PostsController {
                 .orElseGet(() -> ResponseEntity.status(404).body(Map.of(
                         "error", Map.of("code","NOT_FOUND","message","post not found"))));
     }
+    */
 
     // POST /api/v1/posts
     @PostMapping
