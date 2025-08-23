@@ -15,14 +15,27 @@ import { Link, Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styles from "../styles/myPage_style.js";
 
-//icon Import
+// 아이콘 라이브러리 불러오기
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Octicons from "@expo/vector-icons/Octicons";
 import { Ionicons } from "@expo/vector-icons";
 
 const EXTRA_TOP = 6;
+// Pressable 눌렀을 때 공통으로 쓸 투명도 효과
+const PRESSED = { opacity: 0.6 };
+const PRESSED_SOFT = { opacity: 0.7 };
 
-/** ✅ 회색 둥근(Pill) 버튼 — 로컬 스타일 (외부와 충돌 방지) */
+// ── 헤더 아이콘 스타일 (이 파일 전용) ─────────────────────────────────────────
+const header = StyleSheet.create({
+  iconBtn: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconImg: { width: 22, height: 22, resizeMode: "contain" },
+});
+
+// ── 회색 Pill 버튼 (프로필 보기 전용) ─────────────────────────────────────────
 const pill = StyleSheet.create({
   box: {
     backgroundColor: "#EFEFF1",
@@ -34,14 +47,10 @@ const pill = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  text: {
-    fontSize: 14,
-    color: "#6B6B6B",
-    fontFamily: "Pretendard-Semibold",
-  },
+  text: { fontSize: 14, color: "#6B6B6B", fontFamily: "Pretendard-Semibold" },
 });
 
-/** 모달 전용 로컬 스타일 */
+// ── 확인 모달 스타일 (로그아웃/탈퇴) ─────────────────────────────────────────
 const local = StyleSheet.create({
   overlay: {
     flex: 1,
@@ -76,10 +85,10 @@ const local = StyleSheet.create({
   cancelText: { fontSize: 15, color: "#444", fontWeight: "600" },
   confirmText: { fontSize: 15, color: "#fff", fontWeight: "700" },
   ml10: { marginLeft: 10 },
-  pressed: { opacity: 0.6 },
 });
 
-/** 통계 박스 */
+// ── 소형 컴포넌트 ───────────────────────────────────────────────────────────
+// 프로필 하단의 통계 박스 (게시물/팔로워/팔로잉)
 const StatBox = ({ label, value }: { label: string; value: string }) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
@@ -87,7 +96,7 @@ const StatBox = ({ label, value }: { label: string; value: string }) => (
   </View>
 );
 
-/** 일반 행 (아이콘 + 텍스트 + →) */
+// 아이콘 + 텍스트 + 우측 화살표 행 (RowItem)
 const RowItem = ({
   icon,
   label,
@@ -101,7 +110,7 @@ const RowItem = ({
   return (
     <Pressable
       onPress={() => router.push(href)}
-      style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
+      style={({ pressed }) => [styles.row, pressed && PRESSED]}
     >
       <View style={styles.rowLeft}>
         <Ionicons name={icon} size={22} />
@@ -116,13 +125,25 @@ const RowItem = ({
   );
 };
 
-/** 설정 전용 (텍스트만) */
-const SettingsItem = ({ label, href }: { label: string; href: Href }) => {
+// 설정 화면에서 사용하는 텍스트 전용 행 (href 또는 onPress 지원)
+const SettingsItem = ({
+  label,
+  href,
+  onPress,
+}: {
+  label: string;
+  href?: Href;
+  onPress?: () => void;
+}) => {
   const router = useRouter();
+  const handlePress = () => {
+    if (href) router.push(href);
+    else onPress?.();
+  };
   return (
     <Pressable
-      onPress={() => router.push(href)}
-      style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}
+      onPress={handlePress}
+      style={({ pressed }) => [styles.settingsRow, pressed && PRESSED]}
     >
       <Text style={styles.settingsText} numberOfLines={1}>
         {label}
@@ -135,31 +156,31 @@ export default function MyPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // 단일 모달로 로그아웃/탈퇴 구분
+  // 하나의 모달로 로그아웃 / 탈퇴 확인 처리
   const [confirmType, setConfirmType] = useState<null | "logout" | "delete">(
     null
   );
   const closeModal = () => setConfirmType(null);
 
+  // confirmType 값에 따라 메시지와 버튼 텍스트 다르게 표시
   const message =
     confirmType === "logout"
       ? "로그아웃 하시겠습니까?"
       : confirmType === "delete"
       ? "탈퇴하시겠습니까?"
       : "";
-
   const confirmLabel = confirmType === "delete" ? "탈퇴하기" : "로그아웃";
 
+  // 실제 처리 로직 (API 연동 부분은 TODO)
   const handleConfirm = async () => {
     const type = confirmType;
     closeModal();
-
     if (type === "logout") {
-      // TODO: 실제 로그아웃 로직
+      // TODO: 실제 로그아웃 로직 추가
       // await auth.signOut();
       // router.replace('/login');
     } else if (type === "delete") {
-      // TODO: 실제 탈퇴 로직
+      // TODO: 실제 탈퇴 로직 추가
       // await api.deleteAccount();
       // router.replace('/goodbye');
     }
@@ -169,22 +190,34 @@ export default function MyPage() {
     <SafeAreaView style={[styles.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
       <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
+        {/* 헤더 영역 (타이틀 + 알림/설정 버튼) */}
         <View style={styles.headerRow}>
           <Text style={styles.title}>마이페이지</Text>
-          <View style={styles.headerIcons}>
-            <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
+          <View style={[styles.headerIcons, { alignItems: "center" }]}>
+            {/* 알림 버튼 */}
+            <Pressable
+              onPress={() => router.push("/(myPageTabs)/notice")}
+              style={({ pressed }) => [
+                header.iconBtn,
+                pressed && PRESSED,
+                { marginRight: -12 },
+              ]}
+            >
               <Image
                 source={require("../../assets/images/notice.png")}
-                style={[styles.headerIcon, { width: 22, height: 22 }]}
-                resizeMode="contain"
+                style={header.iconImg}
               />
             </Pressable>
-            <MaterialIcons name="settings" size={25} color="#C2C2C2" />
+            {/* 설정 버튼 */}
+            <Pressable
+              style={({ pressed }) => [header.iconBtn, pressed && PRESSED]}
+            >
+              <MaterialIcons name="settings" size={22} color="#C2C2C2" />
+            </Pressable>
           </View>
         </View>
 
-        {/* Profile */}
+        {/* 프로필 카드 (아바타, 닉네임, 아이디, 프로필 보기 버튼) */}
         <View style={[styles.profileCard, { overflow: "visible" }]}>
           <Image
             source={{ uri: "https://i.pravatar.cc/100?img=3" }}
@@ -195,8 +228,9 @@ export default function MyPage() {
             <Text style={styles.username}>@username123</Text>
           </View>
 
+          {/* 프로필 보기 버튼 */}
           <Link href="/(myPageTabs)/profile-view" asChild>
-            <Pressable style={({ pressed }) => [pressed && { opacity: 0.7 }]}>
+            <Pressable style={({ pressed }) => [pressed && PRESSED_SOFT]}>
               <View style={pill.box}>
                 <Text style={pill.text}>프로필 보기</Text>
               </View>
@@ -204,7 +238,7 @@ export default function MyPage() {
           </Link>
         </View>
 
-        {/* Stats */}
+        {/* 통계 카드 (게시물/팔로워/팔로잉) */}
         <View style={styles.statCard}>
           <StatBox label="게시물" value="137" />
           <View style={styles.divider} />
@@ -213,7 +247,7 @@ export default function MyPage() {
           <StatBox label="팔로잉" value="5" />
         </View>
 
-        {/* 관심 */}
+        {/* 나의 관심 (좋아요/댓글/스크랩) */}
         <Text style={styles.sectionTitle}>나의 관심</Text>
         <View style={styles.card}>
           <RowItem
@@ -235,7 +269,7 @@ export default function MyPage() {
           />
         </View>
 
-        {/* 활동 */}
+        {/* 나의 활동 (내 글, 최근 본 글) */}
         <Text style={styles.sectionTitle}>나의 활동</Text>
         <View style={styles.card}>
           <RowItem
@@ -251,45 +285,29 @@ export default function MyPage() {
           />
         </View>
 
-        {/* 설정 */}
+        {/* 설정 메뉴 (동네 설정, 언어, 로그아웃, 탈퇴) */}
         <Text style={styles.sectionTitle}>설정</Text>
         <View style={styles.settingsCard}>
           <SettingsItem label="내 동네 설정" href="/(settings)/neighborhood" />
           <SettingsItem label="언어설정" href="/(settings)/language" />
-
-          <Pressable
+          <SettingsItem
+            label="로그아웃"
             onPress={() => setConfirmType("logout")}
-            style={({ pressed }) => [
-              styles.settingsRow,
-              pressed && { opacity: 0.6 },
-            ]}
-          >
-            <Text style={styles.settingsText} numberOfLines={1}>
-              로그아웃
-            </Text>
-          </Pressable>
-
-          <Pressable
+          />
+          <SettingsItem
+            label="탈퇴하기"
             onPress={() => setConfirmType("delete")}
-            style={({ pressed }) => [
-              styles.settingsRow,
-              pressed && { opacity: 0.6 },
-            ]}
-          >
-            <Text style={styles.settingsText} numberOfLines={1}>
-              탈퇴하기
-            </Text>
-          </Pressable>
+          />
         </View>
       </ScrollView>
 
-      {/* 단일 확인 모달 */}
+      {/* 로그아웃/탈퇴 확인 모달 */}
       <Modal
         transparent
         visible={confirmType !== null}
         animationType="fade"
         onRequestClose={closeModal}
-        statusBarTranslucent // ✅ 상단 상태바 영역까지 오버레이 적용
+        statusBarTranslucent
       >
         <View style={local.overlay}>
           <View style={local.card}>
@@ -300,7 +318,7 @@ export default function MyPage() {
                 style={({ pressed }) => [
                   local.btn,
                   local.cancelBtn,
-                  pressed && local.pressed,
+                  pressed && PRESSED,
                 ]}
               >
                 <Text style={local.cancelText}>취소</Text>
@@ -311,7 +329,7 @@ export default function MyPage() {
                   local.btn,
                   local.confirmBtn,
                   local.ml10,
-                  pressed && local.pressed,
+                  pressed && PRESSED,
                 ]}
               >
                 <Text style={local.confirmText}>{confirmLabel}</Text>
