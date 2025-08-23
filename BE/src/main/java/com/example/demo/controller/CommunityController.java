@@ -14,8 +14,8 @@ import java.util.List;
  * 게시물(Post) 관련 API 컨트롤러
  * 모든 주소는 /api/v1/posts 로 시작하도록 통일합니다.
  */
-@RestController
-@RequestMapping("/api/v1/posts") // URL을 /api/v1/posts로 변경
+//@RestController
+//@RequestMapping("/api/v1/posts") // URL을 /api/v1/posts로 변경
 @RequiredArgsConstructor
 public class CommunityController { // 클래스 이름을 PostController로 변경
 
