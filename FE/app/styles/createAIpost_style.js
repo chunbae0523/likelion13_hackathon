@@ -28,7 +28,8 @@ export default StyleSheet.create({
   },
 
   descriptionContainer: {
-    marginVertical: 80,
+    marginTop: 80,
+    marginBottom: 40,
     alignItems: "center",
   },
 
@@ -46,6 +47,8 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: "#C2C2C2",
     borderRadius: 10,
+    marginTop: 40,
+    marginBottom: 50,
   },
 
   inputText: {
@@ -55,6 +58,26 @@ export default StyleSheet.create({
     color: "#000000",
     textAlignVertical: "top",
     flex: 1,
+  },
+
+  imageContainer: {
+    alignItems: "center",
+    marginVertical: 20,
+    flex: 2,
+    flexDirection: "column",
+  },
+
+  imageBox: {
+    height: "100%",
+    aspectRatio: 1,
+    borderRadius: 30,
+    backgroundColor: "#C2C2C2",
+    overflow: "hidden",
+  },
+
+  createdImage: {
+    width: "100%",
+    height: "100%",
   },
 
   inputBottomContainer: {
@@ -90,7 +113,6 @@ export default StyleSheet.create({
 
   createButtonContainer: {
     marginHorizontal: 17,
-    marginTop: 50,
     backgroundColor: "#EA6844",
     borderRadius: 10,
     height: 48,
@@ -99,9 +121,92 @@ export default StyleSheet.create({
     justifyContent: "center",
   },
 
+  reCreateButtonContainer: {
+    marginHorizontal: 17,
+    backgroundColor: "#C2C2C2",
+    borderRadius: 10,
+    height: 48,
+    marginBottom: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 5,
+  },
+
   createButtonText: {
     color: "#FFFFFF",
     fontSize: 18,
     fontFamily: "Pretendard-SemiBold",
+  },
+
+  saveButtonContainer: {
+    marginHorizontal: 17,
+    backgroundColor: "#EA6844",
+    borderRadius: 10,
+    height: 48,
+    marginBottom: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontFamily: "Pretendard-SemiBold",
+  },
+
+  modalContainer: {
+    width: screenWidth,
+    height: screenHeight,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)", // 투명도 있는 검정 배경
+  },
+
+  modalBox: {
+    width: 300,
+    height: 300,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  makingDesText: {
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: "Pretendard-SemiBold",
+    color: "#000000",
+  },
+
+  closeModalButtonContainer: {
+    marginTop: 20,
+    marginBottom: 50,
+    backgroundColor: "#EA6844",
+    borderRadius: 10,
+    marginHorizontal: 15,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  closeModalText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontFamily: "Pretendard-SemiBold",
+  },
+
+  waitingDesText: {
+    textAlign: "center",
+    fontSize: 13,
+    fontFamily: "Pretendard-SemiBold",
+    color: "#9C9C9C",
+  },
+
+  loadingAnimation: {
+    width: 50,
+    height: 50,
+    marginBottom: 50,
   },
 });

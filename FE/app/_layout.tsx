@@ -5,6 +5,8 @@ import Feather from "@expo/vector-icons/Feather";
 import { Stack, router, useSegments } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { AppStateProvider } from "../src/context/AppStateContext"; // 공유하는 변수 관리 Context
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Pretendard-Regular": require("../assets/fonts/Pretendard-Regular.ttf"),
@@ -27,23 +29,25 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Stack>
-        <Stack.Screen name="tabs" options={{ headerShown: false }} />
-      </Stack>
+    <AppStateProvider>
+      <View style={{ flex: 1 }}>
+        <Stack>
+          <Stack.Screen name="tabs" options={{ headerShown: false }} />
+        </Stack>
 
-      {showWriteButton && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => {
-            // 버튼 누를 때 동작
-            router.push("/(somunWrite)/somunWrite");
-          }}
-        >
-          <Feather name="feather" size={24} color="white" />
-        </TouchableOpacity>
-      )}
-    </View>
+        {showWriteButton && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => {
+              // 버튼 누를 때 동작
+              router.push("/(somunWrite)/somunWrite");
+            }}
+          >
+            <Feather name="feather" size={24} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </AppStateProvider>
   );
 }
 

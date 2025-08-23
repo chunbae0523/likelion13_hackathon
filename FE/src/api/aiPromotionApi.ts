@@ -1,5 +1,4 @@
 import axios from "axios";
-import apiClient from "./apiClient";
 import Constants from "expo-constants";
 
 const AI_API_TOKEN = Constants.expoConfig?.extra?.AI_API_TOKEN;
