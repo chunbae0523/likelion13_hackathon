@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { Link, Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import styles from "../styles/myPage_style.js";
+import { myPage } from "../styles/myPage_style";
 
 //icon Import
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -22,10 +22,9 @@ import { Ionicons } from "@expo/vector-icons";
 
 const EXTRA_TOP = 6;
 
-/** ✅ 회색 둥근(Pill) 버튼 — 로컬 스타일 (외부와 충돌 방지) */
 const pill = StyleSheet.create({
   box: {
-    backgroundColor: "#EFEFF1",
+    backgroundColor: "#F0F0F0",
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 999,
@@ -36,8 +35,9 @@ const pill = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: "#6B6B6B",
-    fontFamily: "Pretendard-Semibold",
+    color: "#9C9C9C",
+    fontFamily: "Pretendard",
+    fontWeight: 500,
   },
 });
 
@@ -72,46 +72,49 @@ const local = StyleSheet.create({
     justifyContent: "center",
   },
   cancelBtn: { backgroundColor: "#EFEFF0" },
-  confirmBtn: { backgroundColor: "#FF6B3D" },
-  cancelText: { fontSize: 15, color: "#444", fontWeight: "600" },
-  confirmText: { fontSize: 15, color: "#fff", fontWeight: "700" },
+  confirmBtn: { backgroundColor: "#EA6844" },
+  cancelText: { fontSize: 15, color: "#444", fontFamily: "Pretendard-Medium" },
+  confirmText: { fontSize: 15, color: "#fff", fontFamily: "Pretendard-Bold" },
   ml10: { marginLeft: 10 },
   pressed: { opacity: 0.6 },
 });
 
 /** 통계 박스 */
 const StatBox = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.statItem}>
-    <Text style={styles.statValue}>{value}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
+  <View style={myPage.statItem}>
+    <Text style={myPage.statValue}>{value}</Text>
+    <Text style={myPage.statLabel}>{label}</Text>
   </View>
 );
 
-/** 일반 행 (아이콘 + 텍스트 + →) */
 const RowItem = ({
-  icon,
   label,
   href,
+  icon,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   href: Href;
+  icon: any;
 }) => {
   const router = useRouter();
   return (
     <Pressable
       onPress={() => router.push(href)}
-      style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
+      style={({ pressed }) => [myPage.row, pressed && { opacity: 0.6 }]}
     >
-      <View style={styles.rowLeft}>
-        <Ionicons name={icon} size={22} />
-        <Text style={styles.rowText} numberOfLines={1}>
-          {label}
-        </Text>
+      <View style={myPage.rowLeft}>
+        {icon && (
+          <Image
+            source={icon}
+            style={{ width: 20, height: 20, resizeMode: "contain" }}
+          />
+        )}
+        <Text style={myPage.rowText}>{label}</Text>
       </View>
-      <View style={styles.rowRight}>
-        <Ionicons name="chevron-forward" size={20} />
-      </View>
+      <Image
+        source={require("../../assets/images/arrow_right.png")}
+        style={{ width: 30, height: 30, tintColor: "#555555" }}
+      />
     </Pressable>
   );
 };
@@ -122,9 +125,9 @@ const SettingsItem = ({ label, href }: { label: string; href: Href }) => {
   return (
     <Pressable
       onPress={() => router.push(href)}
-      style={({ pressed }) => [styles.settingsRow, pressed && { opacity: 0.6 }]}
+      style={({ pressed }) => [myPage.settingsRow, pressed && { opacity: 0.6 }]}
     >
-      <Text style={styles.settingsText} numberOfLines={1}>
+      <Text style={myPage.settingsText} numberOfLines={1}>
         {label}
       </Text>
     </Pressable>
@@ -166,33 +169,35 @@ export default function MyPage() {
   };
 
   return (
-    <SafeAreaView style={[styles.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
+    <SafeAreaView style={[myPage.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={myPage.container}>
         {/* Header */}
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>마이페이지</Text>
-          <View style={styles.headerIcons}>
+        <View style={myPage.headerRow}>
+          <Text style={myPage.title}>마이페이지</Text>
+          <View style={myPage.headerIcons}>
             <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
-              <Image
-                source={require("../../assets/images/notice.png")}
-                style={[styles.headerIcon, { width: 22, height: 22 }]}
-                resizeMode="contain"
-              />
+              <Octicons name="bell-fill" size={25} color="#C2C2C2" />
             </Pressable>
             <MaterialIcons name="settings" size={25} color="#C2C2C2" />
           </View>
         </View>
 
         {/* Profile */}
-        <View style={[styles.profileCard, { overflow: "visible" }]}>
+        <View style={[myPage.profileCard, { overflow: "visible" }]}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/100?img=3" }}
-            style={styles.avatar}
+            source={require("../../assets/images/profile_default.png")}
+            style={myPage.avatar}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.nickname}>소문이</Text>
-            <Text style={styles.username}>@username123</Text>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={myPage.nickname}>소문이</Text>
+              <View style={myPage.badge}>
+                <Text style={myPage.badgeText}>사장님</Text>
+              </View>
+            </View>
+
+            <Text style={myPage.username}>@username123</Text>
           </View>
 
           <Link href="/(myPageTabs)/profile-view" asChild>
@@ -205,66 +210,70 @@ export default function MyPage() {
         </View>
 
         {/* Stats */}
-        <View style={styles.statCard}>
+        <View style={myPage.statCard}>
           <StatBox label="게시물" value="137" />
-          <View style={styles.divider} />
           <StatBox label="팔로워" value="7.5만" />
-          <View style={styles.divider} />
           <StatBox label="팔로잉" value="5" />
         </View>
-
+        <View style={myPage.insightCtaBox}>
+          <Pressable
+            style={myPage.insightCta}
+            onPress={() => router.push("../(myPageTabs)/insite")}
+          >
+            <Text style={myPage.insightCtaText}>인사이트 보러가기</Text>
+          </Pressable>
+        </View>
         {/* 관심 */}
-        <Text style={styles.sectionTitle}>나의 관심</Text>
-        <View style={styles.card}>
+        <Text style={myPage.sectionTitle}>나의 관심</Text>
+        <View style={myPage.card}>
           <RowItem
-            icon="heart-outline"
+            icon={require("../../assets/images/my_like.png")}
             label="좋아요"
             href="/(myPageTabs)/likes"
           />
-          <View style={styles.separator} />
+
           <RowItem
-            icon="chatbubble-ellipses-outline"
+            icon={require("../../assets/images/my_comment.png")}
             label="댓글"
             href="/(myPageTabs)/comments"
           />
-          <View style={styles.separator} />
           <RowItem
-            icon="bookmark-outline"
+            icon={require("../../assets/images/my_scrap.png")}
             label="스크랩"
             href="/(myPageTabs)/scraps"
           />
         </View>
 
+        <View style={myPage.divider} />
         {/* 활동 */}
-        <Text style={styles.sectionTitle}>나의 활동</Text>
-        <View style={styles.card}>
+        <Text style={myPage.sectionTitle}>나의 활동</Text>
+        <View style={myPage.card}>
           <RowItem
-            icon="document-text-outline"
+            icon={require("../../assets/images/my_somun.png")}
             label="내가 작성한 소문"
             href="/myposts"
           />
-          <View style={styles.separator} />
           <RowItem
-            icon="time-outline"
+            icon={require("../../assets/images/my_somun_recent.png")}
             label="최근 본 소문"
             href="/recently-viewed"
           />
         </View>
-
+        <View style={myPage.divider} />
         {/* 설정 */}
-        <Text style={styles.sectionTitle}>설정</Text>
-        <View style={styles.settingsCard}>
+        <Text style={myPage.sectionTitle}>설정</Text>
+        <View style={myPage.settingsCard}>
           <SettingsItem label="내 동네 설정" href="/(settings)/neighborhood" />
           <SettingsItem label="언어설정" href="/(settings)/language" />
 
           <Pressable
             onPress={() => setConfirmType("logout")}
             style={({ pressed }) => [
-              styles.settingsRow,
+              myPage.settingsRow,
               pressed && { opacity: 0.6 },
             ]}
           >
-            <Text style={styles.settingsText} numberOfLines={1}>
+            <Text style={myPage.settingsText} numberOfLines={1}>
               로그아웃
             </Text>
           </Pressable>
@@ -272,11 +281,11 @@ export default function MyPage() {
           <Pressable
             onPress={() => setConfirmType("delete")}
             style={({ pressed }) => [
-              styles.settingsRow,
+              myPage.settingsRow,
               pressed && { opacity: 0.6 },
             ]}
           >
-            <Text style={styles.settingsText} numberOfLines={1}>
+            <Text style={myPage.settingsText} numberOfLines={1}>
               탈퇴하기
             </Text>
           </Pressable>
@@ -289,7 +298,6 @@ export default function MyPage() {
         visible={confirmType !== null}
         animationType="fade"
         onRequestClose={closeModal}
-        statusBarTranslucent // ✅ 상단 상태바 영역까지 오버레이 적용
       >
         <View style={local.overlay}>
           <View style={local.card}>

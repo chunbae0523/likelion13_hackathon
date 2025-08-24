@@ -4,3 +4,7 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+# 환경변수 파일
+.env
+
