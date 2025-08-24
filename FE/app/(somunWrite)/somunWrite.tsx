@@ -27,7 +27,7 @@ import MapPinIcon from "../../assets/images/map_pin.svg";
 import TitleIcon from "../../assets/images/title.svg";
 
 // API Imports
-import { createPost, fetchPosts } from "@/src/api/communityApi";
+import { createPost, fetchPosts } from "../../src/api/communityApi";
 
 const ICONSIZE = 27; // AI홍보물 생성 등의 기본 아이콘 크기
 
