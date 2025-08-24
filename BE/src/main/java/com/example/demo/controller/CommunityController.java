@@ -8,27 +8,39 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-/**
- * 게시물(Post) 관련 API 컨트롤러
- * 모든 주소는 /api/v1/posts 로 시작하도록 통일합니다.
- */
+// ---------------------- 문제되던 부분(겹침 유발) ----------------------
+// @RestController
+// @RequestMapping("/api/v1/posts")   // ❌ PostsController와 충돌 (같은 베이스 경로)
+// ---------------------------------------------------------------------
+
+// ✅ 명세 반영: 커뮤니티는 별도 네임스페이스로 분리
+// (DB 환경에서만 켜고 싶으면 아래 @Profile("db") 주석을 해제하세요.)
+// import org.springframework.context.annotation.Profile;
+// @Profile("db")
 @RestController
-@RequestMapping("/api/v1/posts") // URL을 /api/v1/posts로 변경
+@RequestMapping("/api/v1/community")
 @RequiredArgsConstructor
-public class CommunityController { // 클래스 이름을 PostController로 변경
+public class CommunityController {
 
     private final PostService postService;
 
-    // --- '글 작성'(@PostMapping) 기능은 다른 팀원이 만들었으므로 여기서 제거합니다. ---
+    // --- 글 작성은 다른 컨트롤러에서 처리하므로 제외 ---
 
     /**
-     * 게시물 목록 조회 (최신순/인기순)
-     * 호출: GET /api/v1/posts?sort=new&limit=10
+     * 최신/인기 글 목록
+     * 명세: GET /api/v1/community/posts?sort=new|popular&limit=20&cursor=...
      */
-    @GetMapping
-    public ResponseEntity<List<PostResponseDto>> getPosts(@RequestParam String sort, @RequestParam(defaultValue = "20") int limit) {
+    // ---------------------- 문제되던 부분(겹침 유발) ----------------------
+    // @GetMapping                     // ❌ (기존) /api/v1/posts 와 충돌
+    // ---------------------------------------------------------------------
+    @GetMapping("/posts")              // ✅ (변경) /api/v1/community/posts
+    public ResponseEntity<List<PostResponseDto>> getPosts(
+            @RequestParam String sort,
+            @RequestParam(defaultValue = "20") int limit) {
+
         if (!"new".equals(sort) && !"popular".equals(sort)) {
             return ResponseEntity.badRequest().build();
         }
@@ -36,10 +48,13 @@ public class CommunityController { // 클래스 이름을 PostController로 변�
     }
 
     /**
-     * 게시물 1개 상세 조회
-     * 호출: GET /api/v1/posts/15
+     * 게시물 상세
+     * 명세: GET /api/v1/community/posts/{postId}
      */
-    @GetMapping("/{postId}")
+    // ---------------------- 문제되던 부분(겹침 유발) ----------------------
+    // @GetMapping("/{postId}")        // ❌ (기존) /api/v1/posts/{postId} 와 충돌
+    // ---------------------------------------------------------------------
+    @GetMapping("/posts/{postId}")     // ✅ (변경)
     public ResponseEntity<PostDetailResponseDto> getPostDetails(@PathVariable Long postId) {
         try {
             return ResponseEntity.ok(postService.getPostDetails(postId));
@@ -49,10 +64,11 @@ public class CommunityController { // 클래스 이름을 PostController로 변�
     }
 
     /**
-     * 게시물 좋아요
-     * 호출: POST /api/v1/posts/15/like
+     * 좋아요
+     * 명세: POST /api/v1/community/posts/{postId}/like
      */
-    @PostMapping("/{postId}/like")
+    // (아래 두 개는 원래도 경로가 안 겹쳤지만, 일관성 위해 /community 붙임)
+    @PostMapping("/posts/{postId}/like")
     public ResponseEntity<String> likePost(@PathVariable Long postId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
@@ -65,10 +81,10 @@ public class CommunityController { // 클래스 이름을 PostController로 변�
     }
 
     /**
-     * 게시물 스크랩
-     * 호출: POST /api/v1/posts/15/scrap
+     * 스크랩
+     * 명세: POST /api/v1/community/posts/{postId}/scrap
      */
-    @PostMapping("/{postId}/scrap")
+    @PostMapping("/posts/{postId}/scrap")
     public ResponseEntity<String> scrapPost(@PathVariable Long postId, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
@@ -80,3 +96,4 @@ public class CommunityController { // 클래스 이름을 PostController로 변�
         }
     }
 }
+
