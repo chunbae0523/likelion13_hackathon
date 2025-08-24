@@ -1,16 +1,4 @@
-export type Post = {
-  id: string; // 문자열만 올 수 있음
-  authorName: string;
-  content: string;
-  images?: string[];
-  likes: number;
-  commentsCount: number;
-  createdAt: string; // ISO 문자열
-  tags?: string[];
-  caption?: string;
-};
+export * from "../../src/types/community";
 
-export type Paginated<T> = {
-  items: T[];
-  nextCursor?: string | null;
-};
+//이건 그냥 expo가 만든거임, 수정사항이 생기면 src/types/community.ts에서 수정해야함.
+//여기는 그냥 그걸 받아오는거.

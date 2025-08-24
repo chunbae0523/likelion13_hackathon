@@ -1,15 +1,31 @@
 // src/types/community.ts
-export type PollOption = { id: number; text: string; votes: number };
+export type Post = {
+  id: string;
+  authorName: string;
+  content: string;
+  images?: string[];
+  likes: number;
+  commentsCount: number;
+  createdAt: string; // ISO
+  tags?: string[];
+  caption?: string;
+  poll?: Poll;
+};
+
+export type PollOption = {
+  id: string;       // string으로 통일
+  label?: string;   // __fake__에서 쓰던 label
+  text?: string;    // UI가 text만 기대할 때 대비
+  votes: number;
+};
+
 export type Poll = {
-  question: string;
+  question?: string;
   options: PollOption[];
-  userVote: number | null;
+  myChoice?: string | null; // 과거 userVote 대체
 } | null;
 
-// 기존 Post를 확장 (필드는 전부 optional로 두면 하위 호환 안전)
-import type { Post as BasePost } from "../../.expo/types/community";
-
-export type Post = BasePost & {
-  images?: string[];
-  poll?: Poll;
+export type Paginated<T> = {
+  items: T[];
+  nextCursor?: string | null;
 };
