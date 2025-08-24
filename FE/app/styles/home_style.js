@@ -73,6 +73,7 @@ export default StyleSheet.create({
   locationText: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 22*scale,
+    lineHeight: 28 * scale,
   },
   topBoxDownArrow: {
     width: 23*scale,
