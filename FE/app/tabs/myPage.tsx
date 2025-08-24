@@ -113,7 +113,7 @@ const RowItem = ({
       </View>
       <Image
         source={require("../../assets/images/arrow_right.png")}
-        style={{ width: 30, height: 30 }}
+        style={{ width: 30, height: 30, tintColor: "#555555" }}
       />
     </Pressable>
   );
@@ -244,7 +244,7 @@ export default function MyPage() {
           />
         </View>
 
-        <View style={myPage.separator} />
+        <View style={myPage.divider} />
         {/* 활동 */}
         <Text style={myPage.sectionTitle}>나의 활동</Text>
         <View style={myPage.card}>
@@ -259,7 +259,7 @@ export default function MyPage() {
             href="/recently-viewed"
           />
         </View>
-        <View style={myPage.separator} />
+        <View style={myPage.divider} />
         {/* 설정 */}
         <Text style={myPage.sectionTitle}>설정</Text>
         <View style={myPage.settingsCard}>

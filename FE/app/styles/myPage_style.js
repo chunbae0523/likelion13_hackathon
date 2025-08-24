@@ -113,13 +113,20 @@ export const myPage = StyleSheet.create({
     fontFamily: "Pretendard",
   },
 
+  divider: {
+    justifyContent: "center",
+    marginHorizontal: 18,
+    marginVertical: 15,
+    height: 2,
+    backgroundColor: "#F0F0F0",
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    marginTop: 20,
-    marginBottom: 10,
     marginHorizontal: 18,
     fontFamily: "Pretendard",
+    marginVertical: 10,
   },
 
   card: {
@@ -144,7 +151,7 @@ export const myPage = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 24,
   },
-  settingsRow: { paddingHorizontal: 20, marginVertical: 5 },
+  settingsRow: { paddingHorizontal: 20, marginVertical: 7 },
   settingsText: { fontSize: 16, color: "#9C9C9C", fontFamily: "Pretendard" },
 });
 
