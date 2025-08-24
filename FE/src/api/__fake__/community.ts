@@ -2,7 +2,12 @@
 import type { Paginated, Post } from "../../../.expo/types/community";
 
 // 백엔드 Post를 느슨하게 확장: images/poll을 테스트용으로 추가
-type PollOption = { id: string | number; label?: string; text?: string; votes: number };
+type PollOption = {
+  id: string | number;
+  label?: string;
+  text?: string;
+  votes: number;
+};
 type Poll = {
   options: PollOption[];
   myChoice?: string | number | null;
@@ -23,9 +28,7 @@ const fixtures: ExtendedPost[] = [
     commentsCount: 3,
     createdAt: new Date().toISOString(),
     tags: ["동네행사"],
-    images: [
-      "https://picsum.photos/seed/sun1/900/600",
-    ],
+    images: ["https://picsum.photos/seed/sun1/900/600"],
     poll: {
       options: [
         { id: "A", label: "갑시다", votes: 5 },
@@ -42,9 +45,7 @@ const fixtures: ExtendedPost[] = [
     commentsCount: 5,
     createdAt: new Date(Date.now() - 3600_000).toISOString(),
     tags: ["맛집"],
-    images: [
-      "https://picsum.photos/seed/ramen/1000/700",
-    ],
+    images: ["https://picsum.photos/seed/ramen/1000/700"],
     poll: {
       options: [
         { id: "A", label: "돈코츠", votes: 10 },
@@ -52,14 +53,12 @@ const fixtures: ExtendedPost[] = [
       ],
       myChoice: "B",
     },
-
-
   },
   {
     id: "p3",
     authorName: "username123",
     content: "라떼 메뉴 중 어떤 게 더 끌리시나요??",
-    caption: "맛있겠다",   // 👈 서버에도 caption 필드 포함
+    caption: "맛있겠다", // 👈 서버에도 caption 필드 포함
     likes: 1700,
     commentsCount: 1735,
     createdAt: new Date(Date.now() - 7200_000).toISOString(),
@@ -76,7 +75,10 @@ const fixtures: ExtendedPost[] = [
 ];
 
 // 목록
-export async function fakeFetchPosts(params?: { cursor?: string; limit?: number }): Promise<Paginated<Post>> {
+export async function fakeFetchPosts(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<Paginated<Post>> {
   const start = params?.cursor ? parseInt(params.cursor, 10) : 0;
   const limit = params?.limit ?? 20;
   const page = fixtures.slice(start, start + limit);
@@ -98,7 +100,10 @@ export async function fakeFetchPost(id: string): Promise<Post> {
  * - 같은 항목 재클릭 = 취소 UX를 지원하려면 optionId에 null을 허용
  * - 여기서는 간단히 '선택'만 처리(취소도 가능)
  */
-export async function fakeVote(postId: string, optionId: string | number | null): Promise<Post> {
+export async function fakeVote(
+  postId: string,
+  optionId: string | number | null
+): Promise<Post> {
   const idx = fixtures.findIndex((p) => p.id === postId);
   if (idx < 0) throw new Error("존재하지 않는 게시물");
 
@@ -132,4 +137,14 @@ export async function fakeVote(postId: string, optionId: string | number | null)
 
   fixtures[idx] = next;
   return next as Post;
+}
+
+export async function fakeCreatePost(data: Post): Promise<Post> {
+  const newPost = {
+    ...data,
+    id: `p${fixtures.length + 1}`,
+    createdAt: new Date().toISOString(),
+  };
+  fixtures.push(newPost);
+  return newPost;
 }

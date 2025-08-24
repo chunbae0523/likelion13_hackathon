@@ -1,14 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Image,
+  Modal,
 } from "react-native";
 import { useNavigation, Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styles/somunWrite_styles"; // Import styles
+import { AppStateContext } from "../../src/context/AppStateContext";
 
 //icon Imports
 import { Ionicons } from "@expo/vector-icons";
@@ -21,6 +24,10 @@ import ImageIcon from "../../assets/images/image.svg";
 import VideoIcon from "../../assets/images/video.svg";
 import SmileIcon from "../../assets/images/smile.svg";
 import MapPinIcon from "../../assets/images/map_pin.svg";
+import TitleIcon from "../../assets/images/title.svg";
+
+// API Imports
+import { createPost, fetchPosts } from "@/src/api/communityApi";
 
 const ICONSIZE = 27; // AI홍보물 생성 등의 기본 아이콘 크기
 
@@ -32,6 +39,14 @@ export default function somunWrite() {
     navigation.setOptions?.({ headerShown: false });
   }, [navigation]);
 
+  type BadgeType = {
+    id: string;
+    label: string;
+    isAddButton?: boolean;
+    selected?: boolean; // 선택 여부
+    isNew?: boolean; // 새로 추가된 뱃지 여부
+  }; // 뱃지 타입 선언
+
   const [text, setText] = useState(""); // 소문쓰기 적는 텍스트
   // 뱃지 리스트, 리스트에 추가하는 함수
   const [badges, setBadges] = useState<BadgeType[]>([
@@ -42,14 +57,6 @@ export default function somunWrite() {
     { id: "badge5", label: "투표" },
     { id: "add", label: "+추가", isAddButton: true }, // 뱃지 추가 버튼
   ]);
-
-  type BadgeType = {
-    id: string;
-    label: string;
-    isAddButton?: boolean;
-    selected?: boolean; // 선택 여부
-    isNew?: boolean; // 새로 추가된 뱃지 여부
-  }; // 뱃지 타입 선언
 
   // 뱃지 제거 함수
   const removeBadge = (id: string) => {
@@ -64,6 +71,7 @@ export default function somunWrite() {
         id: `badge-${Date.now()}`, // 고유 ID 생성
         label: "",
         isNew: true,
+        selected: true,
       };
       setBadges((prev) => {
         const lastIndex = prev.length - 1;
@@ -85,6 +93,44 @@ export default function somunWrite() {
     setBadges((prev) =>
       prev.map((badge) => (badge.id === id ? { ...badge, label: text } : badge))
     );
+  };
+
+  const context = useContext(AppStateContext);
+  if (!context) {
+    throw new Error("AppStateContext must be used within an AppStateProvider");
+  }
+
+  const { state } = context;
+
+  const { imageURL } = state;
+
+  const [modalVisible, setModalVisible] = React.useState(false); // "내용을 입력해주세요" 모달 상태 관리
+
+  // 게시물 생성 함수
+  const makePost = async () => {
+    if (text === "") {
+      setModalVisible(true);
+      return;
+    }
+    // 선택된 뱃지들 중 label이 빈 문자열이 아닌 것들만 태그로 추출
+    const tags = badges
+      .filter((badge) => badge.selected)
+      .filter((badge) => badge.label !== "")
+      .map((badge) => badge.label);
+    const postData: any = {
+      authorName: "홍길동",
+      content: text,
+      images: imageURL ? [imageURL] : [],
+      likes: 0,
+      commentsCount: 0,
+      createdAt: new Date().toISOString(),
+      tags: tags,
+    };
+    await createPost(postData);
+    router.back();
+    // 게시물 생성후 커뮤니티탭 새로고침 및 imageURL 변수 초기화
+    await fetchPosts({ limit: 20 });
+    context.dispatch({ type: "SET_IMAGE_URL", payload: null });
   };
 
   return (
@@ -111,6 +157,19 @@ export default function somunWrite() {
           onChangeText={setText}
         />
       </View>
+
+      {/* 이미지 영역 */}
+      {imageURL && (
+        <View style={styles.imageContainer}>
+          <View style={styles.imageBox}>
+            <Image
+              source={{ uri: imageURL }}
+              style={styles.createdImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+      )}
 
       {/* 카테고리 뱃지 */}
       <ScrollView
@@ -202,10 +261,39 @@ export default function somunWrite() {
 
       {/* 게시하기 버튼 */}
       <View style={styles.postContainer}>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity
+          onPress={() => {
+            makePost();
+          }}
+        >
           <Text style={styles.postText}>게시하기</Text>
         </TouchableOpacity>
       </View>
+
+      {/* 이미지 생성 중 대기 모달 */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        {/* insets.top: 배경 상단 잘림 방지*/}
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <TitleIcon style={{ marginTop: 50 }} width={130} height={80} />
+            <Text style={styles.makingDesText}>❗내용을 입력해주세요❗</Text>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+              }}
+            >
+              <View style={styles.closeModalButtonContainer}>
+                <Text style={styles.closeModalText}>닫기</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

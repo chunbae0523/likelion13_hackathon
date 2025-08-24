@@ -40,6 +40,26 @@ export default StyleSheet.create({
     fontSize: 18,
   },
 
+  imageContainer: {
+    alignItems: "center",
+    marginVertical: 20,
+    flex: 2,
+    flexDirection: "column",
+  },
+
+  imageBox: {
+    height: "100%",
+    aspectRatio: 1,
+    borderRadius: 30,
+    backgroundColor: "#C2C2C2",
+    overflow: "hidden",
+  },
+
+  createdImage: {
+    width: "100%",
+    height: "100%",
+  },
+
   scrollContainer: {
     width: screenWidth,
     maxHeight: 30,
@@ -166,6 +186,50 @@ export default StyleSheet.create({
     color: "#FFFFFF",
     textAlign: "center",
     fontSize: 18,
+    fontFamily: "Pretendard-SemiBold",
+  },
+
+  modalContainer: {
+    width: screenWidth,
+    height: screenHeight,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)", // 투명도 있는 검정 배경
+  },
+
+  modalBox: {
+    width: 300,
+    height: 300,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 22,
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  makingDesText: {
+    textAlign: "center",
+    fontSize: 20,
+    fontFamily: "Pretendard-SemiBold",
+    color: "#9C9C9C",
+    marginBottom: 30,
+  },
+
+  closeModalButtonContainer: {
+    paddingHorizontal: 50,
+    marginTop: 20,
+    marginBottom: 50,
+    backgroundColor: "#EA6844",
+    borderRadius: 10,
+    marginHorizontal: 15,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  closeModalText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontFamily: "Pretendard-SemiBold",
   },
 });

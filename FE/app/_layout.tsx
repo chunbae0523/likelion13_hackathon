@@ -41,6 +41,7 @@ export default function RootLayout() {
             onPress={() => {
               // 버튼 누를 때 동작
               router.push("/(somunWrite)/somunWrite");
+              // router.push("/login");
             }}
           >
             <Feather name="feather" size={24} color="white" />

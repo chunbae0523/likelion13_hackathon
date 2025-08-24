@@ -7,6 +7,7 @@ import {
   Text,
   View,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { router } from "expo-router";
 import styles from "../styles/home_style.js";
@@ -33,17 +34,30 @@ export default function HomePage() {
     outputRange: ["360deg", "180deg"],
   });
 
+  const [dragging, setDragging] = useState(false);
+
   // 홈 광고이미지 좌우 이동 애니메이션
   const pan = useRef(new Animated.ValueXY()).current; // 위치를 저장하는 Animated.ValueXY
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true, // 터치 시작 시 panResponder 활성화
+      onPanResponderGrant: () => {
+        setDragging(true); // 드래그 시작 - ScrollView 비활성화
+      },
       onPanResponderMove: Animated.event(
         [null, { dx: pan.x }],
         { useNativeDriver: false } // 위치값 XY는 nativeDriver 지원 안 함.
       ),
       onPanResponderRelease: () => {
+        setDragging(false); // 드래그 종료 - ScrollView 활성화
         // 터치 해제 시 애니메이션 초기화
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          useNativeDriver: false,
+        }).start();
+      },
+      onPanResponderTerminate: () => {
+        setDragging(false); // 드래그 종료 - ScrollView 활성화
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
@@ -102,75 +116,81 @@ export default function HomePage() {
         <View style={styles.topToMiddleLine} />
       </View>
 
-      <View style={styles.middleAdBox}>
-        <Animated.Image
-          {...panResponder.panHandlers}
-          style={[pan.getLayout(), styles.middleAdImg]}
-          source={require("../../assets/images/ad.jpg")}
-          resizeMode="contain"
-        />
-      </View>
+      <ScrollView scrollEnabled={!dragging}>
+        <View style={styles.middleAdBox}>
+          <Animated.View
+            style={[pan.getLayout(), styles.middleSemiBox]}
+            {...panResponder.panHandlers}
+          >
+            <Image
+              style={styles.middleAdImg}
+              source={require("../../assets/images/ad.png")}
+              resizeMode="cover"
+            />
+          </Animated.View>
+        </View>
 
-      <View style={styles.middleBottomCase}>
-        <View style={styles.middleBox}>
-          <View style={styles.middleTop}>
-            <Text style={styles.middleTopText}>오늘의 소문</Text>
-            <Text style={styles.middleTopShowAll}>전체보기 {">"}</Text>
-          </View>
-          <View style={styles.middleBottomCase}>
-            <View style={styles.middleBottom}>
-              <View style={styles.bottomAd}>
-                <Image
-                  source={require("../../assets/images/ad.jpg")}
-                  style={styles.bottomAdImage}
-                />
-                <View style={styles.eventBox}>
-                  <Text style={styles.bottomTodays}>오늘의 축제</Text>
-                  <Text style={styles.bottomTodaysDescription}>
-                    가족과 함께하는{"\n"}2025 제6회 송도해변축제
-                  </Text>
+        <View style={styles.middleBottomCase}>
+          <View style={styles.middleBox}>
+            <View style={styles.middleTop}>
+              <Text style={styles.middleTopText}>오늘의 소문</Text>
+              <Text style={styles.middleTopShowAll}>전체보기 {">"}</Text>
+            </View>
+            <View style={styles.middleBottomCase}>
+              <View style={styles.middleBottom}>
+                <View style={styles.bottomAd}>
+                  <Image
+                    source={require("../../assets/images/ad.jpg")}
+                    style={styles.bottomAdImage}
+                  />
+                  <View style={styles.eventBox}>
+                    <Text style={styles.bottomTodays}>오늘의 축제</Text>
+                    <Text style={styles.bottomTodaysDescription}>
+                      가족과 함께하는{"\n"}2025 제6회 송도해변축제
+                    </Text>
+                  </View>
+                  <Image
+                    source={require("../../assets/images/left_arrow.png")}
+                    style={styles.bottomArrowImage}
+                  />
                 </View>
-                <Image
-                  source={require("../../assets/images/left_arrow.png")}
-                  style={styles.bottomArrowImage}
-                />
-              </View>
-              <View style={styles.bottomAd}>
-                <Image
-                  source={require("../../assets/images/ad.jpg")}
-                  style={styles.bottomAdImage}
-                />
-                <View style={styles.eventBox}>
-                  <Text style={styles.bottomTodays}>오늘의 행사</Text>
-                  <Text style={styles.bottomTodaysDescription}>
-                    2025 all Nights Incheon{"\n"}월간 개항장 야간마켓
-                  </Text>
+                <View style={styles.bottomAd}>
+                  <Image
+                    source={require("../../assets/images/ad.jpg")}
+                    style={styles.bottomAdImage}
+                  />
+                  <View style={styles.eventBox}>
+                    <Text style={styles.bottomTodays}>오늘의 행사</Text>
+                    <Text style={styles.bottomTodaysDescription}>
+                      2025 all Nights Incheon{"\n"}월간 개항장 야간마켓
+                    </Text>
+                  </View>
+                  <Image
+                    source={require("../../assets/images/left_arrow.png")}
+                    style={styles.bottomArrowImage}
+                  />
                 </View>
-                <Image
-                  source={require("../../assets/images/left_arrow.png")}
-                  style={styles.bottomArrowImage}
-                />
-              </View>
-              <View style={styles.bottomAd}>
-                <Image
-                  source={require("../../assets/images/ad.jpg")}
-                  style={styles.bottomAdImage}
-                />
-                <View style={styles.eventBox}>
-                  <Text style={styles.bottomTodays}>오늘의 대회</Text>
-                  <Text style={styles.bottomTodaysDescription}>
-                    이런저런설명이있는축제
-                  </Text>
+                <View style={styles.bottomAd}>
+                  <Image
+                    source={require("../../assets/images/ad.jpg")}
+                    style={styles.bottomAdImage}
+                  />
+                  <View style={styles.eventBox}>
+                    <Text style={styles.bottomTodays}>오늘의 대회</Text>
+                    <Text style={styles.bottomTodaysDescription}>
+                      이런저런설명이있는축제
+                    </Text>
+                  </View>
+                  <Image
+                    source={require("../../assets/images/left_arrow.png")}
+                    style={styles.bottomArrowImage}
+                  />
                 </View>
-                <Image
-                  source={require("../../assets/images/left_arrow.png")}
-                  style={styles.bottomArrowImage}
-                />
               </View>
             </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
