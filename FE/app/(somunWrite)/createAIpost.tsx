@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, use } from "react";
+import React, { useEffect, useContext } from "react";
 import {
   TextInput,
   View,
@@ -8,7 +8,7 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { Link, useNavigation } from "expo-router";
+import { Link, router, useNavigation } from "expo-router";
 import styles from "../styles/createAIpost_style.js"; // Import styles
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppStateContext } from "../../src/context/AppStateContext";
@@ -163,7 +163,12 @@ export default function createAIposts() {
               <Text style={styles.createButtonText}>재생성하기</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              router.back();
+            }}
+          >
             <View style={styles.saveButtonContainer}>
               <Text style={styles.saveButtonText}>저장하기</Text>
             </View>

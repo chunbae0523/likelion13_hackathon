@@ -218,7 +218,7 @@ export default function MyPage() {
         <View style={myPage.insightCtaBox}>
           <Pressable
             style={myPage.insightCta}
-            onPress={() => router.push("../(myPageTabs)/insite")}
+            onPress={() => router.push("/(myPageTabs)/insite")}
           >
             <Text style={myPage.insightCtaText}>인사이트 보러가기</Text>
           </Pressable>

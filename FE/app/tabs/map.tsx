@@ -183,7 +183,7 @@ export default function MapPage() {
       </View>
       <TouchableOpacity style={s.gpsBtn} onPress={goToMyLocation}>
         <Image
-          source={require("@/assets/images/focus.png")}
+          source={require("../../assets/images/focus.png")}
           style={{ width: 60, height: 60 }}
           resizeMode="contain"
         />
@@ -206,7 +206,7 @@ export default function MapPage() {
               }}
             >
               <Image
-                source={require("@/assets/images/map_reload.png")}
+                source={require("../../assets/images/map_reload.png")}
                 style={{ width: 27, height: 27 }}
                 resizeMode="contain"
               />
