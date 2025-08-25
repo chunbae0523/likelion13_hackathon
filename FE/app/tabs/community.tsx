@@ -467,7 +467,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
       : NonNullable<FeedItem["content"]["poll"]>["myChoice"]
   >(item.content.poll?.myChoice ?? (null as any));
 
-  // 투표 합계 및 퍼센트 계산 (poll이 있을 때만 의미)
+  // 투표 합계 및 퍼센트 계산
   const total = opts.reduce((s, o) => s + o.votes, 0);
   const p = (id: PollOptionId) =>
     total === 0 ? 0 : (opts.find((o) => o.id === id)!.votes / total) * 100;
@@ -498,7 +498,9 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         const next = prev.map((o) => ({ ...o }));
         if (choice) {
           const prevIdx = next.findIndex((o) => o.id === choice);
-          if (prevIdx >= 0 && next[prevIdx].votes > 0) next[prevIdx].votes -= 1;
+          if (prevIdx >= 0 && next[prevIdx].votes > 0) {
+            next[prevIdx].votes -= 1;
+          }
         }
         const idx = next.findIndex((o) => o.id === id);
         if (idx >= 0) next[idx].votes += 1;
@@ -508,7 +510,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
       setChoice(id as any);
     }
 
-    // (선택) 가짜 API 동기화 — 없으면 스킵
+    // (선택) 가짜 API 동기화
     if (voteOnPost) {
       try {
         await voteOnPost(item.id, nextChoice as any);
@@ -529,7 +531,12 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
       >
         <Image
           source={{ uri: item.profile.avatar || DEFAULT_AVATAR }}
-          style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            marginRight: 10,
+          }}
         />
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "700", fontSize: 16 }}>
@@ -549,7 +556,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         {item.content.text}
       </Text>
 
-      {/* 투표 바 (poll 있을 때만 표시) */}
+      {/* 투표 바 */}
       {item.content.poll && (
         <View style={{ paddingHorizontal: 12 }}>
           <PollBarThin
@@ -567,7 +574,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         </View>
       )}
 
-      {/* 이미지 (있을 때만 표시) */}
+      {/* 이미지 */}
       {item.content.photo && (
         <View
           style={{
@@ -609,6 +616,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
             {numberToK(item.stats.likes + (liked ? 1 : 0))}
           </Text>
         </Pressable>
+
         <View
           style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
         >
@@ -621,6 +629,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
             {numberToK(item.stats.comments)}
           </Text>
         </View>
+
         <Ionicons
           name={item.stats.saved ? "bookmark" : "bookmark-outline"}
           size={22}
@@ -638,7 +647,11 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
             {!!item.caption && (
               <Text style={{ color: COLOR.sub, fontSize: 13 }}>
                 <Text
-                  style={{ color: COLOR.text, fontWeight: "600", fontSize: 13 }}
+                  style={{
+                    color: COLOR.text,
+                    fontWeight: "600",
+                    fontSize: 13,
+                  }}
                 >
                   {item.author}
                 </Text>
@@ -650,12 +663,16 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
 
           {item.hashtags.length > 0 && (
             <View
-              style={{ paddingHorizontal: 12, marginTop: 10, marginBottom: 6 }}
+              style={{
+                paddingHorizontal: 12,
+                marginTop: 10,
+                marginBottom: 6,
+              }}
             >
               <Text style={{ fontSize: 13, color: COLOR.primary }}>
                 {item.hashtags
                   .map(
-                    (t, i) => `# ${t}${i < item.hashtags.length - 1 ? " " : ""}`
+                    (t, i) => `#${t}${i < item.hashtags.length - 1 ? " " : ""}`
                   )
                   .join("")}
               </Text>
