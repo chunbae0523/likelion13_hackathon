@@ -4,7 +4,7 @@ const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 export default StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#ffffffff" },
+  safe: { flex: 1, backgroundColor: "#ffffff" },
 
   header: {
     paddingHorizontal: 12,

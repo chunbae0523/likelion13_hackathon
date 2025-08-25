@@ -33,6 +33,10 @@ export default function RootLayout() {
       <View style={{ flex: 1 }}>
         <Stack>
           <Stack.Screen name="tabs" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="(myPageTabs)/insite"
+            options={{ headerShown: false }}
+          />
         </Stack>
 
         {showWriteButton && (

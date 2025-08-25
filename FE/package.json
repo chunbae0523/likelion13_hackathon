@@ -12,7 +12,11 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+<<<<<<< HEAD
     "@react-native-async-storage/async-storage": "^2.2.0",
+=======
+    "@react-native-async-storage/async-storage": "2.1.2",
+>>>>>>> 5ecbe49be62d7cd38ef27868bb3ad4142ff85e94
     "@react-navigation/bottom-tabs": "^7.4.6",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.17",
@@ -39,6 +43,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-chart-kit": "^6.12.0",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-maps": "1.20.1",
@@ -55,6 +60,7 @@
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
+    "json-server": "^1.0.0-beta.3",
     "metro-react-native-babel-preset": "^0.77.0",
     "react-native-svg-transformer": "^1.5.1",
     "typescript": "~5.8.3"
