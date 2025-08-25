@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   Image,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { Link, router, useNavigation } from "expo-router";
 import styles from "../styles/createAIpost_style.js"; // Import styles
@@ -85,6 +87,7 @@ export default function createAIposts() {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View
       style={[
         styles.safe,
@@ -237,5 +240,6 @@ export default function createAIposts() {
         </View>
       </Modal>
     </View>
+    </TouchableWithoutFeedback>
   );
 }

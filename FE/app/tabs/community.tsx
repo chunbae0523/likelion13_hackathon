@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, router } from "expo-router";
+import { useRouter } from "expo-router"; // ✅ router 단일화: 모든 네비게이션은 useRouter()로 통일
 import {
   View,
   Text,
@@ -16,20 +16,25 @@ import {
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// 1) 서버(또는 fake)에서 커뮤니티 글 목록을 가져오는 함수
 import {
   fetchPosts,
   /* 선택: */ voteOnPost as _voteOnPost,
 } from "../../src/api/communityApi";
 
-// 2) 백엔드가 반환하는 "원시 데이터"의 타입 (명세서 기반)
+/**
+ * 2) 백엔드가 반환하는 "원시 데이터"의 타입 (명세서 기반)
+ */
 import type { Post } from "../../.expo/types/community";
 
 // --- (선택) 가짜 투표 API가 없을 때를 대비해 안전한 래퍼 ---
 const voteOnPost: undefined | ((id: string, choice: any) => Promise<any>) =
   typeof _voteOnPost === "function" ? _voteOnPost : undefined;
 
-// 기본 폰트 Pretendard-Regular로
+/**
+ * 전역 Typography 기본값: Pretendard-Regular
+ * - RN의 Text는 기본 폰트가 플랫폼에 따라 다릅니다.
+ * - 화면 전반의 타이포 일관성을 위해 defaultProps로 기본 폰트를 지정합니다.
+ */
 (Text as any).defaultProps = {
   ...(Text as any).defaultProps,
   style: [
@@ -38,6 +43,10 @@ const voteOnPost: undefined | ((id: string, choice: any) => Promise<any>) =
   ],
 };
 
+/**
+ * 디자인 토큰 모음
+ * - 색상, 배경, 테두리 등 UI 전반에서 재사용할 상수입니다.
+ */
 const COLOR = {
   bg: "#ffffff",
   card: "#ffffff",
@@ -46,21 +55,27 @@ const COLOR = {
   sub: "#8A8A8E",
   primary: "#FF6B3D",
   chip: "#FAFAFA",
-};
+} as const;
 
-// 투표 얇은 바 높이
+// 투표 얇은 바의 고정 높이
 const POLL_THIN_H = 50;
 
-// 폴백 아바타 (API에 아바타가 없으므로 기본 이미지 사용)
+// 프로필 이미지가 없을 때 쓰는 폴백 아바타
 const DEFAULT_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=256&auto=format&fit=crop&q=60";
 
-//numberToK: 1.2K 처럼 숫자 줄여 표시
+/**
+ * numberToK: 1299 → "1.3K"처럼 간소화 표기
+ */
 function numberToK(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
   return `${n}`;
 }
-//formatTimeAgo: createdAt(ISO) → "n분 전 / n시간 전 / n일 전"
+
+/**
+ * formatTimeAgo: createdAt(ISO) → "n초/분/시간/일 전" 또는 YYYY.M.D
+ * - 간단한 상대시각 표기입니다. 일주일 이상은 날짜로 표기합니다.
+ */
 function formatTimeAgo(isoString: string) {
   const d = new Date(isoString);
   const diff = Date.now() - d.getTime();
@@ -75,21 +90,33 @@ function formatTimeAgo(isoString: string) {
   return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
 }
 
+/** 탭 종류 */
 type TabType = "latest" | "popular";
 
-// 투표 항목 ID는 두 개(바닐라/말차)만 쓰도록 정의
+/**
+ * PollOptionId: UI가 사용하는 2지선다 투표의 내부 식별자
+ * - 백엔드의 실제 옵션 id와 1:1 동일하지 않아도 되며,
+ *   toFeedItem에서 첫 번째 옵션→"vanilla", 두 번째 옵션→"matcha"로 대응시킵니다.
+ */
 type PollOptionId = "vanilla" | "matcha";
 
-// --- 백엔드 Post를 느슨하게 확장해서 images/poll을 안전하게 접근하기 위한 로컬 타입 ---
+/**
+ * LoosePost: 백엔드 Post를 느슨하게 확장하여 images/poll에 안전 접근하기 위한 로컬 타입
+ * - 아직 API가 확정되지 않았거나 필드가 없을 수 있으니 optional 로 둡니다.
+ */
 type LoosePost = Post & {
   images?: string[];
   poll?: {
     options: { id: any; label?: string; text?: string; votes: number }[];
     myChoice?: any | null;
   };
+  caption?: string;
 };
 
-//"FeedItem": 화면 카드가 원하는 데이터 모양 (프로필/본문/투표/통계/해시태그 등)
+/**
+ * FeedItem: 실제 화면 카드가 요구하는 데이터 모양
+ * - 프로필/본문/투표/통계/해시태그 등 UI에 맞춘 구조입니다.
+ */
 type FeedItem = {
   id: string;
   profile: {
@@ -102,7 +129,6 @@ type FeedItem = {
   content: {
     text: string;
     photo?: string;
-    // ⚠️ API에 투표 정보가 아직 없다면 undefined (UI에서 안전하게 숨김)
     poll?:
       | {
           options: { id: PollOptionId; label: string; votes: number }[];
@@ -116,19 +142,19 @@ type FeedItem = {
   hashtags: string[];
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// API → UI 변환 어댑터
-// - 백엔드 Post(명세서) → 화면에서 쓰는 FeedItem 으로 변환
-// - API가 아직 제공하지 않는 값(avatar, 위치, 구, 투표 등)은 "임시 기본값"으로 안전하게 채움
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************************
+ * API → UI 변환 어댑터
+ * - 백엔드 Post(명세서) → 화면에서 쓰는 FeedItem 으로 변환합니다.
+ * - API에 아직 없는 값(avatar, 위치, 구, 투표 등)은 임시 기본값으로 안전하게 채워 UI 크래시를 예방.
+ ***********************************************************************************************/
 function toFeedItem(raw: Post): FeedItem {
   const p = raw as LoosePost;
 
-  // 1) 사진: Post.images가 있으면 첫 장 사용
+  // 1) 사진: images가 있으면 첫 장만 노출
   const photo =
     Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : undefined;
 
-  // 2) 투표: 백엔드에 poll이 있으면 최대 2개만 뽑아서 매핑, 없으면 undefined (UI가 자동으로 숨김)
+  // 2) 투표: poll이 있으면 최대 2개만 추출하여 UI poll 구조로 매핑
   let poll:
     | {
         options: { id: PollOptionId; label: string; votes: number }[];
@@ -162,13 +188,12 @@ function toFeedItem(raw: Post): FeedItem {
           : null,
     };
   }
-  // 👉 poll이 없으면 undefined: 아래 UI에서 자동으로 안 보임
 
   return {
     id: (raw as any).id,
     profile: {
       name: (raw as any).authorName ?? "알 수 없음",
-      avatar: DEFAULT_AVATAR,
+      avatar: DEFAULT_AVATAR, // 아직 API에 아바타가 없다면 폴백 사용
       location: "위치 정보 없음",
       district: "우리동네",
       timeAgo: formatTimeAgo(
@@ -178,7 +203,7 @@ function toFeedItem(raw: Post): FeedItem {
     content: {
       text: (raw as any).content ?? "",
       photo,
-      poll, // 없으면 undefined
+      poll, // 없으면 undefined (UI 렌더링에서 자동으로 숨김)
     },
     stats: {
       likes: (raw as any).likes ?? 0,
@@ -187,148 +212,164 @@ function toFeedItem(raw: Post): FeedItem {
       liked: false, // 서버 연동 전: 로컬 기본값
     },
     author: (raw as any).authorName ?? "알 수 없음",
-    caption: p.caption ?? "", // 백엔드에 별도 캡션 필드 없으면 빈값
+    caption: p.caption ?? "", // 백엔드에 별도 캡션 필드가 없으면 빈값
     hashtags: ((raw as any).tags ?? []) as string[],
   };
 }
 
-//header
+/**
+ * Header: 상단 지역 선택 + 탭(최신/인기) + 알림 아이콘 영역
+ * - props
+ *   - district: 현재 선택된 구 이름
+ *   - onOpenPicker: 구 선택 모달 열기 핸들러
+ *   - activeTab: 현재 탭 상태("latest" | "popular")
+ *   - onChangeTab: 탭 전환 핸들러
+ */
 const Header: React.FC<{
   district: string;
   onOpenPicker: () => void;
   activeTab: TabType;
   onChangeTab: (t: TabType) => void;
-}> = ({ district, onOpenPicker, activeTab, onChangeTab }) => (
-  <View
-    style={{
-      paddingHorizontal: 16,
-      paddingTop: 5,
-      paddingBottom: 10,
-      backgroundColor: COLOR.bg,
-    }}
-  >
-    {/* 상단 타이틀/아이콘 영역 */}
+}> = ({ district, onOpenPicker, activeTab, onChangeTab }) => {
+  const router = useRouter(); // ✅ 이 컴포넌트 내부에서도 useRouter 사용
+  return (
     <View
       style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginRight: 1.6,
-        marginTop: 1,
+        paddingHorizontal: 16,
+        paddingTop: 5,
+        paddingBottom: 10,
+        backgroundColor: COLOR.bg,
       }}
     >
-      <Pressable
-        onPress={onOpenPicker}
-        style={{ flexDirection: "row", alignItems: "center" }}
-      >
-        {/* 선택된 구 이름 */}
-        <Text
-          style={{
-            fontFamily: "Pretendard-SemiBold",
-            fontSize: 22,
-            lineHeight: 28, // 타이틀 블록 높이 통일
-            marginRight: 4,
-          }}
-        >
-          {district}
-        </Text>
-        <Feather name="chevron-down" size={18} color={COLOR.sub} />
-      </Pressable>
-
-      <View
-        style={{ flexDirection: "row", columnGap: 21, alignItems: "center" }}
-      >
-        <Image
-          source={require("../../assets/images/search.png")}
-          style={{
-            width: 22.1,
-            height: 22,
-            resizeMode: "contain",
-            marginBottom: 1,
-            marginRight: -0.5,
-          }}
-        />
-        {/* 알림으로 이동 */}
-        <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
-          <Image
-            source={require("../../assets/images/notice.png")}
-            style={{ width: 23.5, height: 26.5, resizeMode: "contain" }}
-          />
-        </Pressable>
-      </View>
-    </View>
-
-    {/* 탭 버튼 */}
-    <View style={{ flexDirection: "row", marginTop: 14 }}>
-      <Pressable
-        style={{ flex: 1, alignItems: "center" }}
-        onPress={() => onChangeTab("latest")}
-      >
-        <Text
-          style={{
-            fontFamily: "Pretendard-SemiBold",
-            fontSize: 18,
-            color: activeTab === "latest" ? COLOR.primary : COLOR.sub,
-          }}
-        >
-          최신글
-        </Text>
-      </Pressable>
-
-      <Pressable
-        style={{ flex: 1, alignItems: "center" }}
-        onPress={() => onChangeTab("popular")}
-      >
-        <Text
-          style={{
-            fontFamily: "Pretendard-SemiBold",
-            fontSize: 18,
-            color: activeTab === "popular" ? COLOR.primary : COLOR.sub,
-          }}
-        >
-          인기글
-        </Text>
-      </Pressable>
-    </View>
-
-    {/* 탭 인디케이터 (회색 기준선 + 주황 인디케이터) */}
-    <View
-      style={{
-        marginTop: 6,
-        height: 0,
-        marginHorizontal: -16,
-        position: "relative",
-      }}
-    >
-      {/* 회색 기준선 */}
+      {/* 상단 타이틀/아이콘 영역 */}
       <View
         style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: -10,
-          height: 1,
-          backgroundColor: COLOR.border,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginRight: 1.6,
+          marginTop: 1,
         }}
-      />
-      {/* 주황 인디케이터 */}
-      <View
-        style={[
-          {
-            position: "absolute",
-            bottom: -10,
-            height: 2,
-            backgroundColor: COLOR.primary,
-          },
-          activeTab === "latest"
-            ? { left: 0, right: "50%" }
-            : { left: "50%", right: 0 },
-        ]}
-      />
-    </View>
-  </View>
-);
+      >
+        <Pressable
+          onPress={onOpenPicker}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          {/* 선택된 구 이름 */}
+          <Text
+            style={{
+              fontFamily: "Pretendard-SemiBold",
+              fontSize: 22,
+              lineHeight: 28, // 타이틀 블록 높이 통일
+              marginRight: 4,
+            }}
+          >
+            {district}
+          </Text>
+          <Feather name="chevron-down" size={18} color={COLOR.sub} />
+        </Pressable>
 
+        <View
+          style={{ flexDirection: "row", columnGap: 21, alignItems: "center" }}
+        >
+          <Image
+            source={require("../../assets/images/search.png")}
+            style={{
+              width: 22.1,
+              height: 22,
+              resizeMode: "contain",
+              marginBottom: 1,
+              marginRight: -0.5,
+            }}
+          />
+          {/* 알림으로 이동 */}
+          <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
+            <Image
+              source={require("../../assets/images/notice.png")}
+              style={{ width: 23.5, height: 26.5, resizeMode: "contain" }}
+            />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* 탭 버튼 */}
+      <View style={{ flexDirection: "row", marginTop: 14 }}>
+        <Pressable
+          style={{ flex: 1, alignItems: "center" }}
+          onPress={() => onChangeTab("latest")}
+        >
+          <Text
+            style={{
+              fontFamily: "Pretendard-SemiBold",
+              fontSize: 18,
+              color: activeTab === "latest" ? COLOR.primary : COLOR.sub,
+            }}
+          >
+            최신글
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={{ flex: 1, alignItems: "center" }}
+          onPress={() => onChangeTab("popular")}
+        >
+          <Text
+            style={{
+              fontFamily: "Pretendard-SemiBold",
+              fontSize: 18,
+              color: activeTab === "popular" ? COLOR.primary : COLOR.sub,
+            }}
+          >
+            인기글
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* 탭 인디케이터 (회색 기준선 + 주황 인디케이터) */}
+      <View
+        style={{
+          marginTop: 6,
+          height: 0,
+          marginHorizontal: -16,
+          position: "relative",
+        }}
+      >
+        {/* 회색 기준선 */}
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: -10,
+            height: 1,
+            backgroundColor: COLOR.border,
+          }}
+        />
+        {/* 주황 인디케이터 */}
+        <View
+          style={[
+            {
+              position: "absolute",
+              bottom: -10,
+              height: 2,
+              backgroundColor: COLOR.primary,
+            },
+            activeTab === "latest"
+              ? { left: 0, right: "50%" }
+              : { left: "50%", right: 0 },
+          ]}
+        />
+      </View>
+    </View>
+  );
+};
+
+/**
+ * DistrictPicker: 구 선택 모달
+ * - visible: 모달 표시 여부
+ * - onClose: 외부 클릭/뒤로가기로 닫기
+ * - onSelect: 항목 탭 시 선택값 전달
+ */
 const DistrictPicker: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -392,13 +433,20 @@ const DistrictPicker: React.FC<{
   );
 };
 
-/* 투표 바 */
+/**
+ * PollBarThin: 얇은 진행형 투표 바(두 항목 중 하나 선택)
+ * - label: 항목 텍스트
+ * - percent: 해당 항목의 득표율(0~100)
+ * - active: 내가 선택한 항목인지 여부(색상/텍스트 대비에 반영)
+ * - onPress: 항목 선택 핸들러
+ */
 const PollBarThin: React.FC<{
   label: string;
   percent: number;
   active?: boolean;
   onPress?: () => void;
 }> = ({ label, percent, active, onPress }) => {
+  // 오른쪽 끝은 둥글게, 왼쪽은 100% 근접시 자연스럽게 마감
   const RIGHT_R = 10;
   const LEFT_R = percent >= 99.9 ? 10 : 0;
   return (
@@ -453,69 +501,82 @@ const PollBarThin: React.FC<{
   );
 };
 
+/**
+ * 투표 낙관적 업데이트 헬퍼
+ * - prevOpts: 기존 옵션 목록
+ * - prevChoice: 기존 나의 선택값
+ * - id: 새로 누른 항목 id
+ * → 다음 옵션 목록과 다음 선택값을 계산하여 반환
+ */
+function applyVote(
+  prevOpts: { id: PollOptionId; label: string; votes: number }[],
+  prevChoice: PollOptionId | null,
+  id: PollOptionId
+): {
+  nextOpts: { id: PollOptionId; label: string; votes: number }[];
+  nextChoice: PollOptionId | null;
+} {
+  const next = prevOpts.map((o) => ({ ...o }));
+  let nextChoice: PollOptionId | null = prevChoice;
+
+  if (prevChoice === id) {
+    // 같은 항목을 다시 누르면 취소
+    const idx = next.findIndex((o) => o.id === id);
+    if (idx >= 0 && next[idx].votes > 0) next[idx].votes -= 1;
+    nextChoice = null;
+  } else {
+    // 다른 항목을 선택하면 이전 표 -1, 현재 표 +1
+    if (prevChoice) {
+      const prevIdx = next.findIndex((o) => o.id === prevChoice);
+      if (prevIdx >= 0 && next[prevIdx].votes > 0) next[prevIdx].votes -= 1;
+    }
+    const idx = next.findIndex((o) => o.id === id);
+    if (idx >= 0) next[idx].votes += 1;
+    nextChoice = id;
+  }
+  return { nextOpts: next, nextChoice };
+}
+
+/**
+ * PostCard: 피드의 단일 게시물 카드
+ * - 아바타/작성자/위치/시간 → 본문 텍스트 → (선택)투표 → (선택)이미지 → 액션바(좋아요/댓글/저장/더보기) → 캡션/해시태그
+ * - 투표가 없다면 투표 UI 섹션은 렌더링하지 않습니다.
+ */
 const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
-  const routerNav = useRouter();
+  const router = useRouter();
   const [liked, setLiked] = useState(item.stats.liked);
 
   // 투표 상태 (poll이 없는 카드일 수도 있으니 옵션)
-  const [opts, setOpts] = useState(
-    item.content.poll?.options ? item.content.poll.options : []
+  const [opts, setOpts] = useState<
+    { id: PollOptionId; label: string; votes: number }[]
+  >(item.content.poll?.options ?? []);
+  const [choice, setChoice] = useState<PollOptionId | null>(
+    item.content.poll?.myChoice ?? null
   );
-  const [choice, setChoice] = useState<
-    FeedItem["content"]["poll"] extends undefined
-      ? null
-      : NonNullable<FeedItem["content"]["poll"]>["myChoice"]
-  >(item.content.poll?.myChoice ?? (null as any));
 
-  // 투표 합계 및 퍼센트 계산 (poll이 있을 때만 의미)
+  // 투표 합계 및 득표율 계산기
   const total = opts.reduce((s, o) => s + o.votes, 0);
-  const p = (id: PollOptionId) =>
+  const percentOf = (id: PollOptionId) =>
     total === 0 ? 0 : (opts.find((o) => o.id === id)!.votes / total) * 100;
 
-  // ✅ 투표 토글 (낙관적 업데이트 + (있으면)가짜 API 동기화)
+  // ✅ 투표 토글 (낙관적 업데이트 + (있으면) API 동기화)
   const vote = async (id: PollOptionId) => {
-    if (!item.content.poll) return;
+    if (!item.content.poll) return; // 안전장치
 
-    // 롤백용 백업
-    const prevOpts = opts.map((o) => ({ ...o }));
+    // 1) 낙관적 업데이트
+    const prevOpts = opts;
     const prevChoice = choice;
+    const { nextOpts, nextChoice } = applyVote(prevOpts, prevChoice, id);
+    setOpts(nextOpts);
+    setChoice(nextChoice);
 
-    // 낙관적 업데이트
-    let nextChoice: PollOptionId | null;
-    if (choice === id) {
-      // 같은 항목을 다시 누르면 취소
-      setOpts((prev) => {
-        const next = prev.map((o) => ({ ...o }));
-        const idx = next.findIndex((o) => o.id === id);
-        if (idx >= 0 && next[idx].votes > 0) next[idx].votes -= 1;
-        return next;
-      });
-      nextChoice = null;
-      setChoice(null as any);
-    } else {
-      // 다른 항목을 선택하면 이전 표 -1, 현재 표 +1
-      setOpts((prev) => {
-        const next = prev.map((o) => ({ ...o }));
-        if (choice) {
-          const prevIdx = next.findIndex((o) => o.id === choice);
-          if (prevIdx >= 0 && next[prevIdx].votes > 0) next[prevIdx].votes -= 1;
-        }
-        const idx = next.findIndex((o) => o.id === id);
-        if (idx >= 0) next[idx].votes += 1;
-        return next;
-      });
-      nextChoice = id;
-      setChoice(id as any);
-    }
-
-    // (선택) 가짜 API 동기화 — 없으면 스킵
+    // 2) (선택) API 동기화 — 실패 시 롤백
     if (voteOnPost) {
       try {
         await voteOnPost(item.id, nextChoice as any);
       } catch (e) {
-        // 실패 시 롤백
         setOpts(prevOpts);
-        setChoice(prevChoice as any);
+        setChoice(prevChoice);
       }
     }
   };
@@ -524,7 +585,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
     <View style={{ marginTop: 12, marginHorizontal: 12 }}>
       {/* 프로필 영역 */}
       <Pressable
-        onPress={() => routerNav.push("/(myPageTabs)/profile")}
+        onPress={() => router.push("/(myPageTabs)/profile")}
         style={{ padding: 12, flexDirection: "row", alignItems: "center" }}
       >
         <Image
@@ -549,25 +610,22 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         {item.content.text}
       </Text>
 
-      {/* 투표 바 (poll 있을 때만 표시) */}
-      {item.content.poll && (
+      {/* (선택) 투표 바: 옵션 수에 맞춰 자동 렌더링 (기본 2개) */}
+      {item.content.poll && opts.length > 0 && (
         <View style={{ paddingHorizontal: 12 }}>
-          <PollBarThin
-            label={item.content.poll.options[0].label}
-            percent={p(item.content.poll.options[0].id)}
-            active={choice === item.content.poll.options[0].id}
-            onPress={() => vote(item.content.poll!.options[0].id)}
-          />
-          <PollBarThin
-            label={item.content.poll.options[1].label}
-            percent={p(item.content.poll.options[1].id)}
-            active={choice === item.content.poll.options[1].id}
-            onPress={() => vote(item.content.poll!.options[1].id)}
-          />
+          {opts.map((o) => (
+            <PollBarThin
+              key={o.id}
+              label={o.label}
+              percent={percentOf(o.id)}
+              active={choice === o.id}
+              onPress={() => vote(o.id)}
+            />
+          ))}
         </View>
       )}
 
-      {/* 이미지 (있을 때만 표시) */}
+      {/* (선택) 이미지 */}
       {item.content.photo && (
         <View
           style={{
@@ -609,6 +667,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
             {numberToK(item.stats.likes + (liked ? 1 : 0))}
           </Text>
         </Pressable>
+
         <View
           style={{ flexDirection: "row", alignItems: "center", columnGap: 6 }}
         >
@@ -621,6 +680,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
             {numberToK(item.stats.comments)}
           </Text>
         </View>
+
         <Ionicons
           name={item.stats.saved ? "bookmark" : "bookmark-outline"}
           size={22}
@@ -631,7 +691,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         </View>
       </View>
 
-      {/* 캡션/해시태그 */}
+      {/* (선택) 캡션/해시태그 */}
       {(item.caption || item.hashtags.length > 0) && (
         <>
           <View style={{ paddingHorizontal: 12, marginTop: 8 }}>
@@ -655,7 +715,7 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
               <Text style={{ fontSize: 13, color: COLOR.primary }}>
                 {item.hashtags
                   .map(
-                    (t, i) => `# ${t}${i < item.hashtags.length - 1 ? " " : ""}`
+                    (t, i) => `#${t}${i < item.hashtags.length - 1 ? " " : ""}`
                   )
                   .join("")}
               </Text>
@@ -667,9 +727,12 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
   );
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// 메인 스크린
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/***********************************************************************************************
+ * CommunityScreen: 커뮤니티 탭 메인 스크린
+ * - 최초 로드/새로고침/무한 스크롤(다음 페이지)을 담당합니다.
+ * - 탭(최신/인기)에 따라 정렬된 데이터를 FlatList에 공급합니다.
+ * - 헤더는 리스트 밖에 고정되어 스크롤과 독립적입니다.
+ ***********************************************************************************************/
 const CommunityScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [district, setDistrict] = useState("연수구");
@@ -684,14 +747,25 @@ const CommunityScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 최초 로드 (최신글 1페이지)
+  /**
+   * 🔁 공용: 첫 페이지를 받아와 상태 반영 (중복 제거용 헬퍼)
+   * - 최초 로드와 새로고침에서 공통 사용합니다.
+   */
+  const fetchFirstPage = useCallback(async () => {
+    const page = await fetchPosts({ limit: 20 , sort: 'new'});
+    setFeed(page.items.map(toFeedItem));
+    setCursor(page.nextCursor ?? null);
+  }, []);
+
+  /**
+   * 최초 로드 (최신글 1페이지)
+   * - 스피너: loadingInit
+   */
   useEffect(() => {
     (async () => {
       try {
         setLoadingInit(true);
-        const page = await fetchPosts({ limit: 20 });
-        setFeed(page.items.map(toFeedItem));
-        setCursor(page.nextCursor ?? null);
+        await fetchFirstPage();
         setError(null);
       } catch (e: any) {
         setError(e?.message ?? "목록 불러오기 실패");
@@ -699,29 +773,33 @@ const CommunityScreen: React.FC = () => {
         setLoadingInit(false);
       }
     })();
-  }, []);
+  }, [fetchFirstPage]);
 
-  // 새로고침 (맨 처음 페이지 다시 로드)
+  /**
+   * 새로고침: 첫 페이지 재호출
+   * - 스피너: refreshing
+   */
   const onRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      const page = await fetchPosts({ limit: 20 });
-      setFeed(page.items.map(toFeedItem));
-      setCursor(page.nextCursor ?? null);
+      await fetchFirstPage();
       setError(null);
     } catch (e: any) {
       setError(e?.message ?? "새로고침 실패");
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [fetchFirstPage]);
 
-  // 다음 페이지 (무한 스크롤)
+  /**
+   * 다음 페이지 로드 (무한 스크롤)
+   * - onEndReached에서 호출됩니다.
+   */
   const loadMore = useCallback(async () => {
     if (!cursor || loadingMore) return;
     try {
       setLoadingMore(true);
-      const page = await fetchPosts({ cursor, limit: 20 });
+      const page = await fetchPosts({ cursor, limit: 20, sort:'new' });
       setFeed((prev) => [...prev, ...page.items.map(toFeedItem)]);
       setCursor(page.nextCursor ?? null);
     } catch (e) {
@@ -731,7 +809,11 @@ const CommunityScreen: React.FC = () => {
     }
   }, [cursor, loadingMore]);
 
-  // 탭별 데이터 구성
+  /**
+   * 탭별 데이터 구성
+   * - 최신글: 서버 순서 그대로
+   * - 인기글: 좋아요 수 기준 내림차순 정렬
+   */
   const latestData = feed;
   const popularData = useMemo(
     () => [...feed].sort((a, b) => b.stats.likes - a.stats.likes),
@@ -739,10 +821,13 @@ const CommunityScreen: React.FC = () => {
   );
   const data = tab === "latest" ? latestData : popularData;
 
-  // FlatList에 넘길 아이템 렌더러
-  const Item = ({ item }: { item: FeedItem }) => <PostCard item={item} />;
+  // FlatList에 넘길 아이템 렌더러 (메모이제이션으로 불필요한 재생성 방지)
+  const renderItem = useCallback(
+    ({ item }: { item: FeedItem }) => <PostCard item={item} />,
+    []
+  );
 
-  // 최초 로딩 상태
+  // 최초 로딩 상태: 전체 화면 로더
   if (loadingInit && feed.length === 0) {
     return (
       <SafeAreaView
@@ -781,7 +866,7 @@ const CommunityScreen: React.FC = () => {
       {/* 피드 리스트 */}
       <FlatList
         data={data}
-        renderItem={Item}
+        renderItem={renderItem}
         keyExtractor={(i) => i.id}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}

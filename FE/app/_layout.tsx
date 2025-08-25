@@ -1,9 +1,10 @@
+import { useContext } from "react";
 import { useFonts } from "expo-font";
 import "react-native-gesture-handler";
 
 import Feather from "@expo/vector-icons/Feather";
 import { Stack, router, useSegments } from "expo-router";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 
 import { AppStateProvider } from "../src/context/AppStateContext"; // 공유하는 변수 관리 Context
 

@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const SERVER_URL = "http://3.38.103.173"
+export const BASE_URL = "http://15.164.169.162:8080";
 
 const apiClient = axios.create({
-  baseURL: SERVER_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

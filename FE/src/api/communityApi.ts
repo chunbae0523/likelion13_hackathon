@@ -1,46 +1,82 @@
-// src/api/communityApi.ts
-import apiClient from "./apiClient";
-import type { Paginated, Post } from "../../.expo/types/community";
-import {
-  fakeFetchPosts,
-  fakeFetchPost,
-  fakeVote,
-  fakeCreatePost,
-} from "./__fake__/community";
+import apiClient, {BASE_URL} from "./apiClient";
 
-export const voteOnPost = fakeVote; // ✅ 추가ty";
+// 앱에서 쓰는 타입 (필요 시 네 타입으로 맞춰도 OK)
+export type Post = {
+  id: string;
+  authorName: string;
+  content: string;
+  images: string[];
+  likes: number;
+  commentsCount: number;
+  createdAt: string; // ISO
+  tags: string[];
+  poll?: {
+    options: { id: string; label: string; votes: number }[];
+    myChoice: string | null;
+  } | null;
+};
 
-// ✅ 서버 열리면 false로 바꾸기만 하면 실서버로 전환됨
-const USE_FAKE = true; // ← 지금은 API가 비어있다고 했으니 true. 열리면 false!
+export type Paginated<T> = { items: T[]; nextCursor: string | null };
 
-// 서버의 엔드포인트 경로 (백엔드 명세에 맞춰 필요하면 바꾸세요)
-const LIST_PATH = "/community/posts"; // 예: GET http://3.38.103.173/community/posts
-const DETAIL_PATH = (id: string) => `/community/posts/${id}`;
+const URL = BASE_URL + "/api/v1/community/posts";
 
-export async function fetchPosts(params?: {
-  cursor?: string;
-  limit?: number;
-}): Promise<Paginated<Post>> {
-  if (USE_FAKE) return fakeFetchPosts(params);
+// 목록
+export async function fetchPosts(params?: { cursor?: string; limit?: number; sort?: string }): Promise<Paginated<Post>> {
+  const limit = params?.limit ?? 20;
+  const cursorParam = params?.cursor ? `&cursor=${encodeURIComponent(params.cursor)}` : '';
+  const sortParam = params?.sort ? `&sort=${encodeURIComponent(params.sort)}` : '';
+  const url = `${URL}?limit=${limit}${cursorParam}${sortParam}`;
 
-  const { data } = await apiClient.get<Paginated<Post>>(LIST_PATH, {
-    params: { cursor: params?.cursor, limit: params?.limit ?? 20 },
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Failed to fetch posts');
+
+  const data = await res.json();
+
+  const items:Post[] = data;
+
+  const nextCursor = data.nextCursor ?? null;
+
+  return { items, nextCursor };
+}
+
+// 생성
+export async function createPost(payload: Post) {
+  const response = await fetch(`${BASE_URL}/api/v1/posts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   });
-  return data;
+
+  if (!response.ok) {
+    throw new Error(`Failed to create post: ${response.statusText}`);
+  } 
+  else { console.log('Post created successfully'); }
+
 }
 
-export async function fetchPost(id: string): Promise<Post> {
-  if (USE_FAKE) return fakeFetchPost(id);
+// ✅ 투표 (없으면 만들고, 있으면 업데이트)
+export async function voteOnPost(postId: string, uiChoice: string | null): Promise<Post> {
+  // 1) 클라이언트가 선택한 uiChoice를 API에 보낼 형태로 매핑
+  const normalizedChoice = (() => {
+    if (uiChoice === 'vanilla') return 'first';  // 서버에서 처리하는 값 예시
+    if (uiChoice === 'matcha') return 'second';
+    return uiChoice; // 이미 실제 투표 option id 인 경우
+  })();
 
-  const { data } = await apiClient.get<Post>(DETAIL_PATH(id));
-  return data;
-}
+  // 2) API 호출 - 투표 생성/수정 요청 (서버가 내부에서 모든 투표 로직 수행)
+  const response = await fetch(`${URL}/${encodeURIComponent(postId)}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ choice: normalizedChoice }),
+  });
 
-export async function createPost(data: Post): Promise<Post> {
-  if (USE_FAKE) {
-    return fakeCreatePost(data);
+  if (!response.ok) {
+    throw new Error(`투표 처리 실패: ${response.statusText}`);
   }
 
-  const { data: responseData } = await apiClient.post<Post>(LIST_PATH, data);
-  return responseData;
+  // 3) 서버에서 응답한 업데이트 된 게시글/투표 정보 받기
+  const updatedPost: Post = await response.json();
+  return updatedPost;
 }

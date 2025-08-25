@@ -7,6 +7,8 @@ import {
   ScrollView,
   Image,
   Modal,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useNavigation, Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -102,7 +104,7 @@ export default function somunWrite() {
 
   const { state } = context;
 
-  const { imageURL } = state;
+  const { imageURL, isUploading } = state;
 
   const [modalVisible, setModalVisible] = React.useState(false); // "내용을 입력해주세요" 모달 상태 관리
 
@@ -117,6 +119,9 @@ export default function somunWrite() {
       .filter((badge) => badge.selected)
       .filter((badge) => badge.label !== "")
       .map((badge) => badge.label);
+
+    router.back();
+    context.dispatch({ type: "SET_IS_UPLOADING", payload: true });
     const postData: any = {
       authorName: "홍길동",
       content: text,
@@ -127,13 +132,12 @@ export default function somunWrite() {
       tags: tags,
     };
     await createPost(postData);
-    router.back();
-    // 게시물 생성후 커뮤니티탭 새로고침 및 imageURL 변수 초기화
-    await fetchPosts({ limit: 20 });
     context.dispatch({ type: "SET_IMAGE_URL", payload: null });
+    context.dispatch({ type: "SET_IS_UPLOADING", payload: false });
   };
 
   return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <SafeAreaView style={styles.safe}>
       {/* 상단 커스텀 헤더 */}
       <View style={[styles.header, { paddingTop: 8 }]}>
@@ -295,5 +299,6 @@ export default function somunWrite() {
         </View>
       </Modal>
     </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
