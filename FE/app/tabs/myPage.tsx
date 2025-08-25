@@ -1,5 +1,5 @@
 // app/(tabs)/myPage.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -18,6 +18,9 @@ import styles from "../styles/myPage_style.js";
 // 아이콘 라이브러리 불러오기
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
+
+// ✅ [ADD] 로그인한 유저 정보 불러오기
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EXTRA_TOP = 6;
 // Pressable 눌렀을 때 공통으로 쓸 투명도 효과
@@ -156,6 +159,11 @@ export default function MyPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  // ✅ [ADD] 로그인 중인 사용자 정보 상태
+  const [profile, setProfile] = useState<{ username?: string; email?: string }>(
+    {}
+  );
+
   // 하나의 모달로 로그아웃 / 탈퇴 확인 처리
   const [confirmType, setConfirmType] = useState<null | "logout" | "delete">(
     null
@@ -185,6 +193,21 @@ export default function MyPage() {
       // router.replace('/goodbye');
     }
   };
+
+  // ✅ [ADD] 화면 마운트 시 현재 유저 정보 로드
+  useEffect(() => {
+    (async () => {
+      try {
+        const json = await AsyncStorage.getItem("currentUser");
+        if (json) {
+          const parsed = JSON.parse(json);
+          setProfile({ username: parsed?.username, email: parsed?.email });
+        }
+      } catch (e) {
+        console.warn("failed to load currentUser", e);
+      }
+    })();
+  }, []);
 
   return (
     <SafeAreaView style={[styles.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
@@ -224,8 +247,13 @@ export default function MyPage() {
             style={styles.avatar}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.nickname}>소문이</Text>
-            <Text style={styles.username}>@username123</Text>
+            {/* ✅ [FIX] 닉네임 자리: 로그인 유저의 username */}
+            <Text style={styles.nickname}>{profile.username || "소문이"}</Text>
+
+            {/* ✅ [FIX] 아이디 자리는 이메일 그대로 (이메일 자체에 @ 포함) */}
+            <Text style={styles.username}>
+              {profile.email || "user@example.com"}
+            </Text>
           </View>
 
           {/* 프로필 보기 버튼 */}

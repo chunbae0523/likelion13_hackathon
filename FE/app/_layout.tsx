@@ -40,8 +40,8 @@ export default function RootLayout() {
             style={styles.fab}
             onPress={() => {
               // 버튼 누를 때 동작
-              router.push("/(somunWrite)/somunWrite");
-              // router.push("/login");
+              //router.push("/(somunWrite)/somunWrite");
+              router.push("/login");
             }}
           >
             <Feather name="feather" size={24} color="white" />

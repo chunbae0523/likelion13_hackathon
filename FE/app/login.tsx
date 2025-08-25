@@ -32,25 +32,36 @@ export default function AuthScreen() {
 
   // 가상 회원가입 함수 (로컬 저장 대체용)
   const handleRegister = async () => {
-    if (!email || !password || !username) {
+    const emailTrimmed = email.trim(); // ⭐ [FIX]
+    const passwordTrimmed = password.trim(); // ⭐ [FIX]
+
+    if (!emailTrimmed || !passwordTrimmed || !username.trim()) {
       Alert.alert("입력 오류", "모든 필드를 입력해주세요.");
+      return;
+    }
+
+    // ⭐ [ADD] 비밀번호 재확인
+    if (passwordTrimmed !== passwordDoubleCheck.trim()) {
+      Alert.alert("입력 오류", "비밀번호가 일치하지 않습니다.");
       return;
     }
 
     setLoading(true);
     try {
-      // 실제 API 연동 시 이곳에서 POST 요청 보내기
-      // 여기서는 간단히 AsyncStorage에 '사용자 목록'에 저장한다고 가정
       const usersJson = await AsyncStorage.getItem("users");
       const users = usersJson ? JSON.parse(usersJson) : [];
 
-      if (users.some((u: any) => u.email === email)) {
+      if (users.some((u: any) => u.email === emailTrimmed)) {
         Alert.alert("회원가입 실패", "이미 등록된 이메일입니다.");
         setLoading(false);
         return;
       }
 
-      users.push({ email, password, username });
+      users.push({
+        email: emailTrimmed,
+        password: passwordTrimmed,
+        username: username.trim(),
+      });
       await AsyncStorage.setItem("users", JSON.stringify(users));
 
       Alert.alert("회원가입 성공", "로그인 해주세요.");
@@ -65,7 +76,10 @@ export default function AuthScreen() {
 
   // 가상 로그인 함수
   const handleLogin = async () => {
-    if (!email || !password) {
+    const emailTrimmed = email.trim(); // ⭐ [FIX]
+    const passwordTrimmed = password.trim(); // ⭐ [FIX]
+
+    if (!emailTrimmed || !passwordTrimmed) {
       Alert.alert("입력 오류", "이메일과 비밀번호를 입력해주세요.");
       return;
     }
@@ -76,7 +90,7 @@ export default function AuthScreen() {
       const users = usersJson ? JSON.parse(usersJson) : [];
 
       const user = users.find(
-        (u: any) => u.email === email && u.password === password
+        (u: any) => u.email === emailTrimmed && u.password === passwordTrimmed
       );
       if (!user) {
         Alert.alert("로그인 실패", "아이디 또는 비밀번호가 올바르지 않습니다.");
@@ -87,8 +101,13 @@ export default function AuthScreen() {
       // 로그인 성공 시 토큰(가상) 저장
       await AsyncStorage.setItem("authToken", "fake-jwt-token");
 
+      // ✅ [ADD] 현재 로그인한 유저 정보를 저장 (마이페이지에서 사용)
+      await AsyncStorage.setItem(
+        "currentUser",
+        JSON.stringify({ email: user.email, username: user.username })
+      );
+
       Alert.alert("로그인 성공", `환영합니다, ${user.username}님!`);
-      // TODO: 인증 후 화면 전환 처리
       router.push("/tabs/home");
     } catch (e) {
       Alert.alert("로그인 실패", "문제가 발생했습니다.");
@@ -130,6 +149,19 @@ export default function AuthScreen() {
             value={password}
             onChangeText={setPassword}
           />
+
+          {/* ⭐ [ADD] 회원가입 시 닉네임 입력 */}
+          {!isLogin && (
+            <TextInput
+              style={styles.input}
+              placeholder="닉네임"
+              placeholderTextColor={"#C2C2C2"}
+              value={username}
+              onChangeText={setUsername}
+            />
+          )}
+
+          {/* 회원가입 시 비밀번호 재입력 */}
           {!isLogin && (
             <TextInput
               style={styles.input}

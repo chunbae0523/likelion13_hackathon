@@ -23,7 +23,7 @@ export default function IndexRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/tabs/home");
+    router.replace("/login");
   }, [router]);
 
   return null;
