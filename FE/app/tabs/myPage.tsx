@@ -1,5 +1,5 @@
 // app/(tabs)/myPage.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -19,6 +19,9 @@ import { myPage } from "../styles/myPage_style";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Octicons from "@expo/vector-icons/Octicons";
 import { Ionicons } from "@expo/vector-icons";
+
+// ✅ [ADD] 로그인한 유저 정보 불러오기
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EXTRA_TOP = 6;
 
@@ -138,7 +141,12 @@ export default function MyPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // 단일 모달로 로그아웃/탈퇴 구분
+  // ✅ [ADD] 로그인 중인 사용자 정보 상태
+  const [profile, setProfile] = useState<{ username?: string; email?: string }>(
+    {}
+  );
+
+  // 하나의 모달로 로그아웃 / 탈퇴 확인 처리
   const [confirmType, setConfirmType] = useState<null | "logout" | "delete">(
     null
   );
@@ -168,6 +176,21 @@ export default function MyPage() {
     }
   };
 
+  // ✅ [ADD] 화면 마운트 시 현재 유저 정보 로드
+  useEffect(() => {
+    (async () => {
+      try {
+        const json = await AsyncStorage.getItem("currentUser");
+        if (json) {
+          const parsed = JSON.parse(json);
+          setProfile({ username: parsed?.username, email: parsed?.email });
+        }
+      } catch (e) {
+        console.warn("failed to load currentUser", e);
+      }
+    })();
+  }, []);
+
   return (
     <SafeAreaView style={[myPage.safe, { paddingTop: insets.top + EXTRA_TOP }]}>
       <StatusBar barStyle="dark-content" />
@@ -191,13 +214,13 @@ export default function MyPage() {
           />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={myPage.nickname}>소문이</Text>
+              <Text style={myPage.nickname}>{profile.username || "소문이"}</Text>
               <View style={myPage.badge}>
                 <Text style={myPage.badgeText}>사장님</Text>
               </View>
             </View>
 
-            <Text style={myPage.username}>@username123</Text>
+            <Text style={myPage.username}>{profile.email || "user@example.com"}</Text>
           </View>
 
           <Link href="/(myPageTabs)/profile-view" asChild>

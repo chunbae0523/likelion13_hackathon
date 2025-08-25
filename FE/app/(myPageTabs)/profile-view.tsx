@@ -1,5 +1,5 @@
 // app/(myPageTabs)/profile-view.tsx
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -14,6 +14,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+// ✅ 로그인 유저 정보 읽기
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width } = Dimensions.get("window");
 
@@ -40,9 +42,29 @@ export default function ProfileView() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
+  // ✅ 현재 로그인한 사용자 정보 상태
+  const [profile, setProfile] = useState<{ username?: string; email?: string }>(
+    {}
+  );
+
   useEffect(() => {
     navigation.setOptions?.({ headerShown: false });
   }, [navigation]);
+
+  // ✅ 화면 진입 시 저장된 currentUser 로드
+  useEffect(() => {
+    (async () => {
+      try {
+        const json = await AsyncStorage.getItem("currentUser");
+        if (json) {
+          const parsed = JSON.parse(json);
+          setProfile({ username: parsed?.username, email: parsed?.email });
+        }
+      } catch (e) {
+        console.warn("failed to load currentUser", e);
+      }
+    })();
+  }, []);
 
   // 9칸 = 사진 7 + 말풍선 placeholder 2
   const data = useMemo<GridItem[]>(
@@ -113,13 +135,17 @@ export default function ProfileView() {
         />
 
         <View style={styles.nameRow}>
-          <Text style={styles.nickname}>소문이</Text>
+          {/* ✅ 닉네임 → 로그인 유저 username */}
+          <Text style={styles.nickname}>{profile.username || "소문이"}</Text>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>주민</Text>
           </View>
         </View>
 
-        <Text style={styles.username}>@sel_hyun0</Text>
+        {/* ✅ 아이디 자리 → 이메일(앞에 @ 추가하지 않음) */}
+        <Text style={styles.username}>
+          {profile.email || "user@example.com"}
+        </Text>
 
         <View style={styles.locationRow}>
           <Ionicons name="location-outline" size={14} color="#999" />
