@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { TextInput } from "react-native";
 import { useRouter } from "expo-router"; // ✅ router 단일화: 모든 네비게이션은 useRouter()로 통일
 import {
   View,
@@ -727,6 +728,91 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
   );
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// 🔍 검색 모달
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const SearchModal: React.FC<{
+  visible: boolean;
+  query: string;
+  onChangeQuery: (t: string) => void;
+  onClose: () => void;
+  data: FeedItem[];
+  renderItem: ({ item }: { item: FeedItem }) => React.ReactElement;
+}> = ({ visible, query, onChangeQuery, onClose, data, renderItem }) => {
+  return (
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: COLOR.bg }}>
+        {/* 상단 검색 바 */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: COLOR.border,
+            columnGap: 8,
+          }}
+        >
+          <Ionicons name="search" size={20} color={COLOR.sub} />
+          <View
+            style={{
+              flex: 1,
+              borderWidth: 1,
+              borderColor: COLOR.border,
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              paddingVertical: Platform.OS === "ios" ? 10 : 6,
+              backgroundColor: "#fff",
+            }}
+          >
+            <TextInput
+              placeholder="작성자/본문 검색"
+              value={query}
+              onChangeText={onChangeQuery}
+              autoFocus
+              style={{ fontSize: 16 }}
+              returnKeyType="search"
+              clearButtonMode="while-editing"
+            />
+          </View>
+          <Pressable
+            onPress={onClose}
+            style={{ paddingHorizontal: 8, paddingVertical: 6 }}
+          >
+            <Text style={{ fontSize: 16, color: COLOR.primary }}>취소</Text>
+          </Pressable>
+        </View>
+
+        {/* 결과 수 */}
+        <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+          <Text style={{ color: COLOR.sub, fontSize: 12 }}>
+            {query.trim().length === 0
+              ? "검색어를 입력해 주세요."
+              : `검색 결과 ${data.length}건`}
+          </Text>
+        </View>
+
+        {/* 결과 리스트 */}
+        <FlatList
+          data={data}
+          keyExtractor={(i) => i.id}
+          renderItem={renderItem}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 120 }}
+          ListEmptyComponent={
+            query.trim().length > 0 ? (
+              <View style={{ alignItems: "center", marginTop: 40 }}>
+                <Text>일치하는 게시글이 없습니다.</Text>
+              </View>
+            ) : null
+          }
+        />
+      </SafeAreaView>
+    </Modal>
+  );
+};
+
 /***********************************************************************************************
  * CommunityScreen: 커뮤니티 탭 메인 스크린
  * - 최초 로드/새로고침/무한 스크롤(다음 페이지)을 담당합니다.
@@ -752,7 +838,7 @@ const CommunityScreen: React.FC = () => {
    * - 최초 로드와 새로고침에서 공통 사용합니다.
    */
   const fetchFirstPage = useCallback(async () => {
-    const page = await fetchPosts({ limit: 20 , sort: 'new'});
+    const page = await fetchPosts({ limit: 20, sort: "new" });
     setFeed(page.items.map(toFeedItem));
     setCursor(page.nextCursor ?? null);
   }, []);
@@ -799,7 +885,7 @@ const CommunityScreen: React.FC = () => {
     if (!cursor || loadingMore) return;
     try {
       setLoadingMore(true);
-      const page = await fetchPosts({ cursor, limit: 20, sort:'new' });
+      const page = await fetchPosts({ cursor, limit: 20, sort: "new" });
       setFeed((prev) => [...prev, ...page.items.map(toFeedItem)]);
       setCursor(page.nextCursor ?? null);
     } catch (e) {

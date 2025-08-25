@@ -1,3 +1,4 @@
+// likelion13_hackathon/FE/app/tabs/home.tsx
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -66,6 +67,14 @@ export default function HomePage() {
     })
   ).current;
 
+  // ✅ 홈의 검색 아이콘을 누르면 커뮤니티 탭으로 이동하면서 검색 모달을 즉시 오픈
+  const goToCommunitySearch = () => {
+    router.push({
+      pathname: "/tabs/community",
+      params: { openSearch: "1" }, // 커뮤니티에서 이 파라미터를 보고 모달 오픈
+    });
+  };
+
   return (
     <View style={styles.container}>
       {/* 상태바 디폴트값 검정 */}
@@ -78,10 +87,12 @@ export default function HomePage() {
             style={styles.topBoxTitle}
           />
           <View style={styles.topBoxUpRightside}>
-            <Image
-              source={require("../../assets/images/search.png")}
-              style={styles.topBoxSearch}
-            />
+            <Pressable onPress={goToCommunitySearch}>
+              <Image
+                source={require("../../assets/images/search.png")}
+                style={styles.topBoxSearch}
+              />
+            </Pressable>
             <Pressable onPress={() => router.push("/(myPageTabs)/notice")}>
               <Image
                 source={require("../../assets/images/notice.png")}
