@@ -3,6 +3,7 @@ import "react-native-gesture-handler";
 
 import Feather from "@expo/vector-icons/Feather";
 import { Stack, router, useSegments } from "expo-router";
+import { Redirect } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { AppStateProvider } from "../src/context/AppStateContext"; // 공유하는 변수 관리 Context
@@ -44,8 +45,8 @@ export default function RootLayout() {
             style={styles.fab}
             onPress={() => {
               // 버튼 누를 때 동작
-              //router.push("/(somunWrite)/somunWrite");
-              router.push("/login");
+              router.push("/(somunWrite)/somunWrite");
+              //router.push("/login");
             }}
           >
             <Feather name="feather" size={24} color="white" />

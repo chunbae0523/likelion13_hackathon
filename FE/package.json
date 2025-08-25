@@ -12,11 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
-<<<<<<< HEAD
     "@react-native-async-storage/async-storage": "^2.2.0",
-=======
-    "@react-native-async-storage/async-storage": "2.1.2",
->>>>>>> 5ecbe49be62d7cd38ef27868bb3ad4142ff85e94
     "@react-navigation/bottom-tabs": "^7.4.6",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.17",
@@ -50,7 +46,7 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-svg": "^15.12.1",
+    "react-native-svg": "15.11.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17"
