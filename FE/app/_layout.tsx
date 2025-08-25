@@ -3,10 +3,13 @@ import "react-native-gesture-handler";
 
 import Feather from "@expo/vector-icons/Feather";
 import { Stack, router, useSegments } from "expo-router";
-import { Redirect } from "expo-router";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { AppStateProvider } from "../src/context/AppStateContext"; // 공유하는 변수 관리 Context
+
+export const unstable_settings = {
+  initialRouteName: "login",
+};
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -33,6 +36,7 @@ export default function RootLayout() {
     <AppStateProvider>
       <View style={{ flex: 1 }}>
         <Stack>
+          <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="tabs" options={{ headerShown: false }} />
           <Stack.Screen
             name="(myPageTabs)/insite"
