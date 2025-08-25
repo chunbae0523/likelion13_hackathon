@@ -1,4 +1,5 @@
 import React, { createContext, useReducer, ReactNode, Dispatch } from "react";
+import { User } from "../types/user";
 
 // 상태 타입 정의
 type State = {
@@ -9,7 +10,7 @@ type State = {
 
 type Action = 
   | { type: "SET_IMAGE_URL"; payload: string | null }
-  | { type: "SET_IS_UPLOADING"; payload: boolean };
+  | { type: "SET_IS_UPLOADING"; payload: boolean }
 
 // 기본값 설정
 const initialState: State = {

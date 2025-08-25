@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Alert, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Alert, TouchableOpacity, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { router, useNavigation } from "expo-router";
 import styles from "./styles/login_style";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerProfile, checkUserLoginByEmail, fetchUserProfiles } from "../src/api/loginApi";
 
 // Import Icons
 import TitleIcon from "../assets/images/title.svg";
@@ -30,7 +30,6 @@ export default function AuthScreen() {
 
   const [isSaveLogin, setIsSaveLogin] = useState(false); // 로그인 상태 유지 토글
 
-  // 가상 회원가입 함수 (로컬 저장 대체용)
   const handleRegister = async () => {
     const emailTrimmed = email.trim(); // ⭐ [FIX]
     const passwordTrimmed = password.trim(); // ⭐ [FIX]
@@ -47,32 +46,15 @@ export default function AuthScreen() {
     }
 
     setLoading(true);
-    try {
-      const usersJson = await AsyncStorage.getItem("users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
-
-      if (users.some((u: any) => u.email === emailTrimmed)) {
-        Alert.alert("회원가입 실패", "이미 등록된 이메일입니다.");
-        setLoading(false);
-        return;
-      }
-
-      users.push({
-        email: emailTrimmed,
-        password: passwordTrimmed,
-        username: username.trim(),
-      });
-      await AsyncStorage.setItem("users", JSON.stringify(users));
-
-      Alert.alert("회원가입 성공", "로그인 해주세요.");
+    const data = await registerProfile(email, username, password);
+    if (data === null) { // 회원가입 성공
+      Alert.alert("회원가입 오류", "이미 존재하는 이메일입니다.");
+    } else {
+      Alert.alert("회원가입 성공!", "로그인을 진행해주세요.");
       setIsLogin(true);
-    } catch (e) {
-      Alert.alert("회원가입 실패", "문제가 발생했습니다.");
-      console.error(e);
-    } finally {
-      setLoading(false);
     }
-  };
+    setLoading(false);
+    }
 
   // 가상 로그인 함수
   const handleLogin = async () => {
@@ -85,39 +67,18 @@ export default function AuthScreen() {
     }
 
     setLoading(true);
-    try {
-      const usersJson = await AsyncStorage.getItem("users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
-
-      const user = users.find(
-        (u: any) => u.email === emailTrimmed && u.password === passwordTrimmed
-      );
-      if (!user) {
-        Alert.alert("로그인 실패", "아이디 또는 비밀번호가 올바르지 않습니다.");
-        setLoading(false);
-        return;
-      }
-
-      // 로그인 성공 시 토큰(가상) 저장
-      await AsyncStorage.setItem("authToken", "fake-jwt-token");
-
-      // ✅ [ADD] 현재 로그인한 유저 정보를 저장 (마이페이지에서 사용)
-      await AsyncStorage.setItem(
-        "currentUser",
-        JSON.stringify({ email: user.email, username: user.username })
-      );
-
-      Alert.alert("로그인 성공", `환영합니다, ${user.username}님!`);
+    const data = await checkUserLoginByEmail(email, password);
+    if (data) { // true면 성공
+      Alert.alert("로그인 성공", `환영합니다, ${data.username}님!`);
       router.push("/tabs/home");
-    } catch (e) {
-      Alert.alert("로그인 실패", "문제가 발생했습니다.");
-      console.error(e);
-    } finally {
+    } else {
+      Alert.alert("로그인 실패", `잘못된 비밀번호 또는 존재하지 않는 이메일입니다.`);
+    }
       setLoading(false);
     }
-  };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.container}>
       <TitleIcon width={220} height={100} />
       <Text style={styles.sloganText}>동네가 뜨는 순간, 소문났네</Text>
@@ -141,16 +102,7 @@ export default function AuthScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="비밀번호"
-            placeholderTextColor={"#C2C2C2"}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-
-          {/* ⭐ [ADD] 회원가입 시 닉네임 입력 */}
+                    {/* ⭐ [ADD] 회원가입 시 닉네임 입력 */}
           {!isLogin && (
             <TextInput
               style={styles.input}
@@ -160,6 +112,14 @@ export default function AuthScreen() {
               onChangeText={setUsername}
             />
           )}
+          <TextInput
+            style={styles.input}
+            placeholder="비밀번호"
+            placeholderTextColor={"#C2C2C2"}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
           {/* 회원가입 시 비밀번호 재입력 */}
           {!isLogin && (
@@ -233,5 +193,6 @@ export default function AuthScreen() {
         </View>
       </View>
     </View>
+        </TouchableWithoutFeedback>
   );
 }
