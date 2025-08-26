@@ -13,7 +13,11 @@ import {
 import { useNavigation, Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styles/somunWrite_styles"; // Import styles
-import { AppStateContext } from "../../src/context/AppStateContext";
+import { AppStateContext } from "@/src/context/AppStateContext";
+import {
+  pickLocalImageUri,
+  uploadMultipleImagesToSupabase,
+} from "@/src/utils/handleImage";
 
 //icon Imports
 import { Ionicons } from "@expo/vector-icons";
@@ -29,7 +33,9 @@ import MapPinIcon from "../../assets/images/map_pin.svg";
 import TitleIcon from "../../assets/images/title.svg";
 
 // API Imports
-import { createPost, fetchPosts } from "../../src/api/communityApi";
+import { createPost } from "../../src/api/communityApi";
+import { getUserByUUID, getUUID } from "@/src/utils/handleAsyncUUID";
+import { Post } from "@/src/types/community";
 
 const ICONSIZE = 27; // AI홍보물 생성 등의 기본 아이콘 크기
 
@@ -104,7 +110,7 @@ export default function somunWrite() {
 
   const { state } = context;
 
-  const { imageURL, isUploading } = state;
+  const { pickedImages } = state;
 
   const [modalVisible, setModalVisible] = React.useState(false); // "내용을 입력해주세요" 모달 상태 관리
 
@@ -122,32 +128,51 @@ export default function somunWrite() {
 
     router.back();
     context.dispatch({ type: "SET_IS_UPLOADING", payload: true });
-    const postData: any = {
-      authorName: "홍길동",
+    const UUID = await getUUID();
+    const user = await getUserByUUID(UUID);
+
+    const publicUrls =
+      pickedImages.length !== 0
+        ? await uploadMultipleImagesToSupabase(user.id, pickedImages)
+        : [];
+    const postData: Post = {
+      id: user.id,
+      author_name: user.username,
       content: text,
-      images: imageURL ? [imageURL] : [],
+      images: publicUrls,
       likes: 0,
-      commentsCount: 0,
-      createdAt: new Date().toISOString(),
+      comments_count: 0,
+      created_at: new Date().toISOString(),
       tags: tags,
     };
     await createPost(postData);
-    context.dispatch({ type: "SET_IMAGE_URL", payload: null });
+    context.dispatch({ type: "SET_PICKED_IMAGES", payload: [] }); // pickedImages 초기화
     context.dispatch({ type: "SET_IS_UPLOADING", payload: false });
   };
 
+  const selectImages = async () => {
+    const data = await pickLocalImageUri();
+    if (data === null) {
+      return null;
+    }
+    const images = [...pickedImages, data.base64];
+    context.dispatch({ type: "SET_PICKED_IMAGES", payload: images }); // 업로드용 uri이미지리스트
+    return data;
+  };
+
   return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <SafeAreaView style={styles.safe}>
       {/* 상단 커스텀 헤더 */}
-      <View style={[styles.header, { paddingTop: 8 }]}>
-        <Link href="../" asChild>
-          <TouchableOpacity hitSlop={10} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
-          </TouchableOpacity>
-        </Link>
-        <Text style={styles.title}>소문쓰기</Text>
-      </View>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <View style={[styles.header, { paddingTop: 8 }]}>
+          <Link href="../" asChild>
+            <TouchableOpacity hitSlop={10} style={styles.backBtn}>
+              <Ionicons name="chevron-back" size={30} color={"#C2C2C2"} />
+            </TouchableOpacity>
+          </Link>
+          <Text style={styles.title}>소문쓰기</Text>
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* 텍스트 입력 영역 */}
       <View style={styles.textContainer}>
@@ -163,17 +188,22 @@ export default function somunWrite() {
       </View>
 
       {/* 이미지 영역 */}
-      {imageURL && (
-        <View style={styles.imageContainer}>
-          <View style={styles.imageBox}>
-            <Image
-              source={{ uri: imageURL }}
-              style={styles.createdImage}
-              resizeMode="contain"
-            />
-          </View>
-        </View>
-      )}
+      <ScrollView
+        horizontal
+        style={styles.imageContainer}
+        showsHorizontalScrollIndicator={false}
+      >
+        {pickedImages.length !== 0 &&
+          pickedImages.map((uri, index) => (
+            <View style={styles.imageBox} key={index}>
+              <Image
+                source={{ uri: uri }}
+                style={styles.createdImage}
+                resizeMode="cover"
+              />
+            </View>
+          ))}
+      </ScrollView>
 
       {/* 카테고리 뱃지 */}
       <ScrollView
@@ -216,63 +246,72 @@ export default function somunWrite() {
         </View>
       </ScrollView>
 
-      {/* 하단 분리 줄 */}
-      <View style={styles.seperateLine} />
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <View>
+          {/* 하단 분리 줄 */}
+          <View style={styles.seperateLine} />
 
-      {/* 하단 버튼 영역 */}
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          activeOpacity={0.6}
-          style={styles.buttonContainer}
-          onPress={() => {
-            router.push("/(somunWrite)/createAIpost");
-          }}
-        >
-          <AIIcon width={ICONSIZE + 2} height={ICONSIZE + 2} />
-          <Text style={styles.buttonText}>AI 홍보물 생성</Text>
-          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </TouchableOpacity>
+          {/* 하단 버튼 영역 */}
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              activeOpacity={0.6}
+              style={styles.buttonContainer}
+              onPress={() => {
+                router.push("/(somunWrite)/createAIpost");
+              }}
+            >
+              <AIIcon width={ICONSIZE + 2} height={ICONSIZE + 2} />
+              <Text style={styles.buttonText}>AI 홍보물 생성</Text>
+              <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
-          <ImageIcon width={ICONSIZE} height={ICONSIZE} />
-          <Text style={styles.buttonText}>사진 추가</Text>
-          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() => {
+                selectImages();
+              }}
+            >
+              <ImageIcon width={ICONSIZE} height={ICONSIZE} />
+              <Text style={styles.buttonText}>사진 추가</Text>
+              <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
-          <VideoIcon width={ICONSIZE} height={ICONSIZE} />
-          <Text style={styles.buttonText}>동영상 추가</Text>
-          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
+              <VideoIcon width={ICONSIZE} height={ICONSIZE} />
+              <Text style={styles.buttonText}>동영상 추가</Text>
+              <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
-          <SmileIcon width={ICONSIZE - 2} height={ICONSIZE - 2} />
-          <Text style={styles.buttonText}>사람 태그</Text>
-          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
+              <SmileIcon width={ICONSIZE - 2} height={ICONSIZE - 2} />
+              <Text style={styles.buttonText}>사람 태그</Text>
+              <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
-          <MapPinIcon width={ICONSIZE - 3} height={ICONSIZE - 3} />
-          <Text style={styles.buttonText}>위치 추가</Text>
-          <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
-        </TouchableOpacity>
-        <View style={styles.locationChipContainer}>
-          <Text style={styles.locationChipText}>인천광역시</Text>
-          <Text style={styles.locationChipText}>연수구 용담로 135</Text>
-          <Text style={styles.locationChipText}>소문난 카페</Text>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => {}}>
+              <MapPinIcon width={ICONSIZE - 3} height={ICONSIZE - 3} />
+              <Text style={styles.buttonText}>위치 추가</Text>
+              <LeftArrowDark width={33} height={31} style={styles.leftArrow} />
+            </TouchableOpacity>
+            <View style={styles.locationChipContainer}>
+              <Text style={styles.locationChipText}>인천광역시</Text>
+              <Text style={styles.locationChipText}>연수구 용담로 135</Text>
+              <Text style={styles.locationChipText}>소문난 카페</Text>
+            </View>
+          </View>
+
+          {/* 게시하기 버튼 */}
+          <View style={styles.postContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                makePost();
+              }}
+            >
+              <Text style={styles.postText}>게시하기</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-
-      {/* 게시하기 버튼 */}
-      <View style={styles.postContainer}>
-        <TouchableOpacity
-          onPress={() => {
-            makePost();
-          }}
-        >
-          <Text style={styles.postText}>게시하기</Text>
-        </TouchableOpacity>
-      </View>
+      </TouchableWithoutFeedback>
 
       {/* 이미지 생성 중 대기 모달 */}
       <Modal
@@ -299,6 +338,5 @@ export default function somunWrite() {
         </View>
       </Modal>
     </SafeAreaView>
-    </TouchableWithoutFeedback>
   );
 }

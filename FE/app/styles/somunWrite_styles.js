@@ -41,10 +41,8 @@ export default StyleSheet.create({
   },
 
   imageContainer: {
-    alignItems: "center",
-    marginVertical: 20,
-    flex: 2,
-    flexDirection: "column",
+    marginBottom: 15,
+    height: 120,
   },
 
   imageBox: {
@@ -53,6 +51,7 @@ export default StyleSheet.create({
     borderRadius: 30,
     backgroundColor: "#C2C2C2",
     overflow: "hidden",
+    marginHorizontal: 10,
   },
 
   createdImage: {

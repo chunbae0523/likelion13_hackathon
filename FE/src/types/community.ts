@@ -1,14 +1,13 @@
 // src/types/community.ts
 export type Post = {
   id: string;
-  authorName: string;
+  author_name: string;
   content: string;
-  images?: string[];
+  images: string[];
   likes: number;
-  commentsCount: number;
-  createdAt: string; // ISO
-  tags?: string[];
-  caption?: string;
+  comments_count: number;
+  created_at: string; // ISO
+  tags: string[];
   poll?: Poll;
 };
 

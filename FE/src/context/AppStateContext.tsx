@@ -1,28 +1,27 @@
 import React, { createContext, useReducer, ReactNode, Dispatch } from "react";
-import { User } from "../types/user";
 
 // 상태 타입 정의
 type State = {
-  imageURL: string | null;
+  pickedImages: string[];
   isUploading?: boolean;
   // 추가 상태들...
 };
 
-type Action = 
-  | { type: "SET_IMAGE_URL"; payload: string | null }
-  | { type: "SET_IS_UPLOADING"; payload: boolean }
+type Action =
+  | { type: "SET_PICKED_IMAGES"; payload: string[] }
+  | { type: "SET_IS_UPLOADING"; payload: boolean };
 
 // 기본값 설정
 const initialState: State = {
-  imageURL: null,
+  pickedImages: [],
   isUploading: false,
 };
 
 // 리듀서 정의
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "SET_IMAGE_URL":
-      return { ...state, imageURL: action.payload };
+    case "SET_PICKED_IMAGES":
+      return { ...state, pickedImages: action.payload };
     // 추가 액션들...
     case "SET_IS_UPLOADING":
       return { ...state, isUploading: action.payload };

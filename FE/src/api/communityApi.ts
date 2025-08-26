@@ -1,20 +1,6 @@
 import { supabase } from "../lib/supabase";
 
-// 앱에서 쓰는 타입 (필요 시 네 타입으로 맞춰도 OK)
-export type Post = {
-  id: string;
-  authorName: string;
-  content: string;
-  images: string[];
-  likes: number;
-  commentsCount: number;
-  createdAt: string; // ISO
-  tags: string[];
-  poll?: {
-    options: { id: string; label: string; votes: number }[];
-    myChoice: string | null;
-  } | null;
-};
+import { Post } from "../types/community";
 
 export type Paginated<T> = { items: T[]; nextCursor: string | null };
 
@@ -50,10 +36,10 @@ export async function fetchPosts(params?: {
 
 // 생성
 export async function createPost(payload: Post) {
-  const { data, error } = await supabase.from("posts").insert([payload]);
+  console.log(payload);
+  const { data, error } = await supabase.from("posts").upsert([payload]);
 
   if (error) throw error;
-
   return data;
 }
 

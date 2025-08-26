@@ -52,7 +52,7 @@ export const myPage = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
   },
-  badge: {
+  sajangBadge: {
     backgroundColor: ORANGE,
     paddingVertical: 4,
     width: 50,
@@ -60,10 +60,24 @@ export const myPage = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  badgeText: {
+  normalBadge: {
+    backgroundColor: "#F0F0F0",
+    paddingVertical: 4,
+    width: 50,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sajangBadgeText: {
     fontSize: 12,
     fontWeight: "500",
     color: "#fff",
+    fontFamily: "Pretendard",
+  },
+  normalBadgeText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#9C9C9C",
     fontFamily: "Pretendard",
   },
   profileBtnText: {

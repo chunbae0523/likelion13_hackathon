@@ -10,10 +10,16 @@ import {
   StatusBar,
   Modal,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { Link, Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { myPage } from "../styles/myPage_style";
+import {
+  removeUUID,
+  getUserByUUID,
+  getUUID,
+} from "../../src/utils/handleAsyncUUID";
 
 //icon Import
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -22,6 +28,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 // ✅ [ADD] 로그인한 유저 정보 불러오기
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User } from "@/src/types/user";
 
 const EXTRA_TOP = 6;
 
@@ -141,10 +148,16 @@ export default function MyPage() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const dummyUserData: User = {
+    username: "소문이",
+    email: "user@example.com",
+    isSajang: false,
+    id: "",
+    password: "",
+  };
+
   // ✅ [ADD] 로그인 중인 사용자 정보 상태
-  const [profile, setProfile] = useState<{ username?: string; email?: string }>(
-    {}
-  );
+  const [profile, setProfile] = useState<User>(dummyUserData); // 초기값은 더미데이터로 설정, 이후 로그인 완료 시 값 마운트
 
   // 하나의 모달로 로그아웃 / 탈퇴 확인 처리
   const [confirmType, setConfirmType] = useState<null | "logout" | "delete">(
@@ -167,8 +180,10 @@ export default function MyPage() {
 
     if (type === "logout") {
       // TODO: 실제 로그아웃 로직
-      // await auth.signOut();
-      // router.replace('/login');
+      await removeUUID();
+      await AsyncStorage.removeItem("autoLogin");
+      router.replace("/login");
+      Alert.alert("로그아웃", "성공적으로 로그아웃되었습니다.");
     } else if (type === "delete") {
       // TODO: 실제 탈퇴 로직
       // await api.deleteAccount();
@@ -179,15 +194,9 @@ export default function MyPage() {
   // ✅ [ADD] 화면 마운트 시 현재 유저 정보 로드
   useEffect(() => {
     (async () => {
-      try {
-        const json = await AsyncStorage.getItem("currentUser");
-        if (json) {
-          const parsed = JSON.parse(json);
-          setProfile({ username: parsed?.username, email: parsed?.email });
-        }
-      } catch (e) {
-        console.warn("failed to load currentUser", e);
-      }
+      const UUID = await getUUID();
+      const user = await getUserByUUID(UUID);
+      setProfile(user);
     })();
   }, []);
 
@@ -214,13 +223,19 @@ export default function MyPage() {
           />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={myPage.nickname}>{profile.username || "소문이"}</Text>
-              <View style={myPage.badge}>
-                <Text style={myPage.badgeText}>사장님</Text>
-              </View>
+              <Text style={myPage.nickname}>{profile.username}</Text>
+              {profile.isSajang ? (
+                <View style={myPage.sajangBadge}>
+                  <Text style={myPage.sajangBadgeText}>사장님</Text>
+                </View>
+              ) : (
+                <View style={myPage.normalBadge}>
+                  <Text style={myPage.normalBadgeText}>소문이</Text>
+                </View>
+              )}
             </View>
 
-            <Text style={myPage.username}>{profile.email || "user@example.com"}</Text>
+            <Text style={myPage.username}>{profile.email}</Text>
           </View>
 
           <Link href="/(myPageTabs)/profile-view" asChild>

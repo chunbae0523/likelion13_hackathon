@@ -38,8 +38,9 @@ export async function registerProfile(
       email: email,
       username: username,
       password: password,
+      isSajang: false,
     };
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("user_profiles")
       .insert([profileData]); // 배열 형태로 넣어야 함
     if (error) {

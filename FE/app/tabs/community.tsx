@@ -24,7 +24,8 @@ import {
 /**
  * 2) 백엔드가 반환하는 "원시 데이터"의 타입 (명세서 기반)
  */
-import type { Post } from "../../.expo/types/community";
+import type { Post } from "../../src/types/community";
+import { getAvatarUrl } from "@/src/utils/handleImage";
 
 // --- (선택) 가짜 투표 API가 없을 때를 대비해 안전한 래퍼 ---
 const voteOnPost: undefined | ((id: string, choice: any) => Promise<any>) =
@@ -59,10 +60,6 @@ const COLOR = {
 
 // 투표 얇은 바의 고정 높이
 const POLL_THIN_H = 50;
-
-// 프로필 이미지가 없을 때 쓰는 폴백 아바타
-const DEFAULT_AVATAR =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=256&auto=format&fit=crop&q=60";
 
 /**
  * numberToK: 1299 → "1.3K"처럼 간소화 표기
@@ -105,7 +102,6 @@ type PollOptionId = "vanilla" | "matcha";
  * - 아직 API가 확정되지 않았거나 필드가 없을 수 있으니 optional 로 둡니다.
  */
 type LoosePost = Post & {
-  images?: string[];
   poll?: {
     options: { id: any; label?: string; text?: string; votes: number }[];
     myChoice?: any | null;
@@ -119,6 +115,7 @@ type LoosePost = Post & {
  */
 type FeedItem = {
   id: string;
+  created_at: string;
   profile: {
     name: string;
     avatar: string;
@@ -191,13 +188,14 @@ function toFeedItem(raw: Post): FeedItem {
 
   return {
     id: (raw as any).id,
+    created_at: (raw as any).created_at,
     profile: {
-      name: (raw as any).authorName ?? "알 수 없음",
-      avatar: DEFAULT_AVATAR, // 아직 API에 아바타가 없다면 폴백 사용
+      name: (raw as any).author_name ?? "알 수 없음",
+      avatar: getAvatarUrl((raw as any).id), // 아직 API에 아바타가 없다면 폴백 사용
       location: "위치 정보 없음",
       district: "우리동네",
       timeAgo: formatTimeAgo(
-        (raw as any).createdAt ?? new Date().toISOString()
+        (raw as any).created_at ?? new Date().toISOString()
       ),
     },
     content: {
@@ -581,6 +579,8 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
     }
   };
 
+  const [profileError, setProfileError] = useState(false);
+
   return (
     <View style={{ marginTop: 12, marginHorizontal: 12 }}>
       {/* 프로필 영역 */}
@@ -588,10 +588,23 @@ const PostCard: React.FC<{ item: FeedItem }> = ({ item }) => {
         onPress={() => router.push("/(myPageTabs)/profile")}
         style={{ padding: 12, flexDirection: "row", alignItems: "center" }}
       >
-        <Image
-          source={{ uri: item.profile.avatar || DEFAULT_AVATAR }}
-          style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
-        />
+        {!profileError ? (
+          <Image
+            source={{ uri: item.profile.avatar }}
+            style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
+            onError={() => {
+              if (!profileError) {
+                setProfileError(true);
+              }
+            }}
+          />
+        ) : (
+          <Image
+            source={require("../../assets/images/profile_default.png")}
+            style={{ width: 36, height: 36, borderRadius: 18, marginRight: 10 }}
+          />
+        )}
+
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "700", fontSize: 16 }}>
             {item.profile.name}
@@ -752,7 +765,7 @@ const CommunityScreen: React.FC = () => {
    * - 최초 로드와 새로고침에서 공통 사용합니다.
    */
   const fetchFirstPage = useCallback(async () => {
-    const page = await fetchPosts({ limit: 20 , sort: 'new'});
+    const page = await fetchPosts({ limit: 20 });
     setFeed(page.items.map(toFeedItem));
     setCursor(page.nextCursor ?? null);
   }, []);
@@ -799,7 +812,7 @@ const CommunityScreen: React.FC = () => {
     if (!cursor || loadingMore) return;
     try {
       setLoadingMore(true);
-      const page = await fetchPosts({ cursor, limit: 20, sort:'new' });
+      const page = await fetchPosts({ cursor, limit: 20 });
       setFeed((prev) => [...prev, ...page.items.map(toFeedItem)]);
       setCursor(page.nextCursor ?? null);
     } catch (e) {
@@ -867,7 +880,7 @@ const CommunityScreen: React.FC = () => {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(i) => i.id}
+        keyExtractor={(i) => i.created_at}
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
